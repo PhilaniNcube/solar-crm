@@ -335,3 +335,33 @@ export const getCustomerStats = query({
     };
   },
 });
+
+export const getCustomerActivity = query({
+  args: {
+    orgSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { orgSlug } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    // fetch the customers that were either created or updated in the last week
+    const oneWeekAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const recentCustomers = await ctx.db
+      .query("customers")
+      .withIndex("by_org", (q) => q.eq("slug", orgSlug))
+      .filter((q) =>
+        q.or(
+          q.gte(q.field("createdAt"), oneWeekAgo),
+          q.gte(q.field("updatedAt"), oneWeekAgo)
+        )
+      )
+      .collect();
+
+    return recentCustomers;
+  },
+});

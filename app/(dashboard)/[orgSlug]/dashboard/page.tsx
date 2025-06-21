@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { getRecentActivity } from "@/lib/queries/activity";
+import { format } from "date-fns";
 
 interface DashboardPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -20,6 +22,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     notFound();
   }
 
+  const activity = await getRecentActivity(orgSlug);
+
   return (
     <div className="space-y-6">
       <div className="border-b border-gray-200 pb-4">
@@ -27,30 +31,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         <p className="text-gray-600">
           Welcome to your Solar CRM command center
         </p>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-sm font-medium text-gray-500">Active Projects</h3>
-          <p className="text-3xl font-bold text-blue-600">12</p>
-          <p className="text-sm text-gray-600">+2 from last month</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-sm font-medium text-gray-500">New Leads</h3>
-          <p className="text-3xl font-bold text-green-600">24</p>
-          <p className="text-sm text-gray-600">This month</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-sm font-medium text-gray-500">Pending Quotes</h3>
-          <p className="text-3xl font-bold text-yellow-600">8</p>
-          <p className="text-sm text-gray-600">Awaiting response</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-sm font-medium text-gray-500">Revenue</h3>
-          <p className="text-3xl font-bold text-purple-600">$147K</p>
-          <p className="text-sm text-gray-600">This quarter</p>
-        </div>
       </div>
 
       {/* Quick Actions */}
@@ -91,29 +71,27 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       {/* Recent Activity & Upcoming Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Recent Customer Acivity
+          </h2>
           <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm">New lead created: John Smith</p>
-                <p className="text-xs text-gray-500">2 hours ago</p>
+            {activity.map((item) => (
+              <div key={item._id} className="flex items-center space-x-3">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    item.type === "business" ? "bg-blue-500" : "bg-green-500"
+                  }`}
+                ></div>
+                <div className="flex-1">
+                  <p className="text-sm">{item.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {item.updatedAt
+                      ? format(item.updatedAt, "Pp")
+                      : format(item.createdAt, "Pp")}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm">Quote sent to Sarah Wilson</p>
-                <p className="text-xs text-gray-500">4 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm">Project completed for Davis family</p>
-                <p className="text-xs text-gray-500">Yesterday</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

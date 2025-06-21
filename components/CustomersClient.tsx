@@ -34,6 +34,7 @@ import {
   useReactTable,
   flexRender,
 } from "@tanstack/react-table";
+import { Card } from "./ui/card";
 
 interface Customer {
   _id: string;
@@ -164,30 +165,30 @@ export function CustomersClient({
     <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <Card className="bg-white p-4 rounded-lg shadow border">
           <h3 className="text-sm font-medium text-gray-500">Total Customers</h3>
           <p className="text-2xl font-bold text-blue-600">
             {customerStats.totalCustomers}
           </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        </Card>
+        <Card className="bg-white p-4 rounded-lg shadow border">
           <h3 className="text-sm font-medium text-gray-500">Residential</h3>
           <p className="text-2xl font-bold text-green-600">
             {customerStats.residentialCustomers}
           </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        </Card>
+        <Card className="bg-white p-4 rounded-lg shadow border">
           <h3 className="text-sm font-medium text-gray-500">Business</h3>
           <p className="text-2xl font-bold text-purple-600">
             {customerStats.businessCustomers}
           </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        </Card>
+        <Card className="bg-white p-4 rounded-lg shadow border">
           <h3 className="text-sm font-medium text-gray-500">With Leads</h3>
           <p className="text-2xl font-bold text-orange-600">
             {customerStats.customersWithLeads}
           </p>
-        </div>
+        </Card>
       </div>{" "}
       {/* Customers DataTable */}
       <div className="bg-white rounded-lg shadow border">

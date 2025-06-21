@@ -40,12 +40,14 @@ export default async function CustomerDetailPage({
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{customer?.name}</h1>
           <p className="text-gray-600">Customer Details</p>
-        </div>
+        </div>{" "}
         <div className="flex gap-2">
           <Link href={`/${orgSlug}/customers`}>
             <Button variant="outline">Back to Customers</Button>
           </Link>
-          <Button>Edit Customer</Button>
+          <Link href={`/${orgSlug}/customers/${customerId}/edit`}>
+            <Button>Edit Customer</Button>
+          </Link>
         </div>
       </div>
 

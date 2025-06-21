@@ -15,8 +15,6 @@ const isProtectedRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   const authData = await auth();
 
-  console.log("Auth Data:", authData);
-
   // If user hits /dashboard directly, redirect to their org dashboard
   if (
     req.nextUrl.pathname === "/dashboard" &&
