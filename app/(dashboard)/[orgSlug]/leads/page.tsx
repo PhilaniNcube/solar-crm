@@ -1,6 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import { LeadsClient } from "@/components/LeadsClient";
+import { Button } from "@/components/ui/button";
 
 interface LeadsPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -18,6 +22,11 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
     notFound();
   }
 
+  // Preload leads data
+  const preloadedLeads = await preloadQuery(api.leads.leads, {
+    orgSlug,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -27,11 +36,8 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
             Manage your sales pipeline from first contact to quote
           </p>
         </div>
-        <Link
-          href={`/${orgSlug}/leads/new`}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Add New Lead
+        <Link href={`/${orgSlug}/leads/new`}>
+          <Button>Add New Lead</Button>
         </Link>
       </div>
 
@@ -93,69 +99,8 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
         </div>
       </div>
 
-      {/* Recent Leads Table */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-xl font-semibold">Recent Leads</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Source
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">John Smith</div>
-                  <div className="text-sm text-gray-500">john@example.com</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Residential
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                    New
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Website
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  2 days ago
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <Link
-                    href={`/${orgSlug}/leads/lead-1`}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    View Details
-                  </Link>
-                </td>
-              </tr>
-              {/* Add more sample rows here */}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Leads Table */}
+      <LeadsClient preloadedLeads={preloadedLeads} orgSlug={orgSlug} />
     </div>
   );
 }

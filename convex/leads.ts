@@ -16,9 +16,21 @@ export const leads = query({
     // Fetch leads for the given organization slug
     const leads = await ctx.db
       .query("leads")
-      .filter((q) => q.eq(q.field("slug"), orgSlug));
+      .filter((q) => q.eq(q.field("slug"), orgSlug))
+      .collect();
 
-    return leads;
+    // return leads with the customer name included
+    const leadsWithCustomerNames = await Promise.all(
+      leads.map(async (lead) => {
+        const customer = await ctx.db.get(lead.customerId);
+        return {
+          ...lead,
+          customerName: customer ? customer.name : "Unknown Customer",
+        };
+      })
+    );
+
+    return leadsWithCustomerNames;
   },
 });
 
