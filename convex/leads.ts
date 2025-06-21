@@ -17,15 +17,14 @@ export const leads = query({
     const leads = await ctx.db
       .query("leads")
       .filter((q) => q.eq(q.field("slug"), orgSlug))
-      .collect();
-
-    // return leads with the customer name included
+      .collect(); // return leads with the customer name and type included
     const leadsWithCustomerNames = await Promise.all(
       leads.map(async (lead) => {
         const customer = await ctx.db.get(lead.customerId);
         return {
           ...lead,
           customerName: customer ? customer.name : "Unknown Customer",
+          customerType: customer ? customer.type : undefined,
         };
       })
     );
