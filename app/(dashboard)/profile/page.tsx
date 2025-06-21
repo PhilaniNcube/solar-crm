@@ -2,7 +2,7 @@ import { UserProfile } from "@clerk/nextjs";
 
 const ProfilePage = () => {
   return (
-    <div className="flex justify-center py-8">
+    <div className="flex justify-center py-6">
       <div className="max-w-sm w-full">
         <UserProfile
           routing="hash"
