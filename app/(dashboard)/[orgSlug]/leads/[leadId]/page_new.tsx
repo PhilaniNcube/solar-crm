@@ -1,10 +1,9 @@
+import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { fetchQuery } from "convex/nextjs";
 import { LeadDetailsClient } from "@/components/LeadDetailsClient";
 
 interface LeadDetailsPageProps {

@@ -2,40 +2,51 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher([
+// More explicit route matching
+const isProtectedRoutes = createRouteMatcher([
   "/dashboard(.*)",
   "/(dashboard)(.*)",
-  "/:orgSlug/dashboard(.*)",
-  "/:orgSlug/customers(.*)",
-  "/:orgSlug/leads(.*)",
-  "/:orgSlug/projects(.*)",
-  "/:orgSlug/settings(.*)",
+  "/profile(.*)",
 ]);
+
+// Custom function to check if route should be protected
+const isProtectedRoute = (pathname: string): boolean => {
+  // Check for exact patterns that should be protected
+  const protectedPatterns = [
+    /^\/dashboard($|\/.*)/,
+    /^\/(dashboard)($|\/.*)/,
+    /^\/profile($|\/.*)/,
+    /^\/[^\/]+\/dashboard($|\/.*)/,
+    /^\/[^\/]+\/customers($|\/.*)/,
+    /^\/[^\/]+\/leads($|\/.*)/,
+    /^\/[^\/]+\/projects($|\/.*)/,
+    /^\/[^\/]+\/settings($|\/.*)/,
+    /^\/[^\/]+\/quotes($|\/.*)/,
+    /^\/[^\/]+\/equipment($|\/.*)/,
+    /^\/[^\/]+\/schedule($|\/.*)/,
+  ];
+
+  return protectedPatterns.some((pattern) => pattern.test(pathname));
+};
 
 export default clerkMiddleware(async (auth, req) => {
   const authData = await auth();
+  const pathname = req.nextUrl.pathname;
 
   // If user hits /dashboard directly, redirect to their org dashboard
-  if (
-    req.nextUrl.pathname === "/dashboard" &&
-    authData.userId &&
-    authData.orgSlug
-  ) {
+  if (pathname === "/dashboard" && authData.userId && authData.orgSlug) {
     return NextResponse.redirect(
       new URL(`/${authData.orgSlug}/dashboard`, req.url)
     );
   }
 
   // if the authData.orgId is undefined but the user is signed in then redirect user profile page
-  if (
-    req.nextUrl.pathname === "/dashboard" &&
-    authData.userId &&
-    !authData.orgSlug
-  ) {
+  if (pathname === "/dashboard" && authData.userId && !authData.orgSlug) {
     return NextResponse.redirect(new URL(`/profile`, req.url));
   }
 
-  if (isProtectedRoute(req)) {
+  // Check if route should be protected using our custom function
+  if (isProtectedRoutes(req) || isProtectedRoute(pathname)) {
     await auth.protect();
   }
 

@@ -173,3 +173,40 @@ export const getLead = query({
     return lead;
   },
 });
+
+// Query to get a lead with customer details
+export const getLeadWithCustomer = query({
+  args: {
+    leadId: v.id("leads"),
+    orgSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { leadId, orgSlug } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    // Get the lead
+    const lead = await ctx.db.get(leadId);
+    if (!lead) {
+      return null;
+    }
+
+    // Verify it belongs to the organization
+    if (lead.slug !== orgSlug) {
+      throw new Error("Lead does not belong to this organization");
+    }
+
+    // Get the customer
+    const customer = await ctx.db.get(lead.customerId);
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    return {
+      ...lead,
+      customer,
+    };
+  },
+});

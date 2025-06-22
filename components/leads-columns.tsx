@@ -35,7 +35,15 @@ export function createLeadsColumns(orgSlug: string): ColumnDef<Lead>[] {
       header: "Customer",
       cell: ({ row }) => {
         const customerName = row.getValue("customerName") as string;
-        return <div className="font-medium">{customerName}</div>;
+        const lead = row.original;
+        return (
+          <Link
+            href={`/${orgSlug}/leads/${lead._id}`}
+            className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            {customerName}
+          </Link>
+        );
       },
     },
     {

@@ -40,6 +40,7 @@ export default defineSchema({
     .index("by_org", ["slug"])
     .index("by_user", ["userId"]) // For audit queries
     .index("by_org_user", ["slug", "userId"]), // Compound index  // Catalog of equipment (panels, inverters, etc.) for each organization
+
   equipment: defineTable({
     slug: v.string(),
     userId: v.string(), // From Clerk User - for audit purposes

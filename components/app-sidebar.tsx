@@ -10,6 +10,7 @@ import {
   ChevronDown,
   User2,
   LogOut,
+  DollarSignIcon,
 } from "lucide-react";
 
 import {
@@ -57,6 +58,11 @@ const navigationItems = [
     title: "Projects",
     url: "/projects",
     icon: FolderOpen,
+  },
+  {
+    title: "Quotes",
+    url: "/quotes",
+    icon: DollarSignIcon,
   },
   {
     title: "Equipment",

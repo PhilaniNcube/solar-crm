@@ -19,6 +19,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -71,7 +72,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Equipment, equipmentColumns } from "./equipment-columns";
+import { Equipment, createEquipmentColumns } from "./equipment-columns";
 import { CreateEquipmentForm } from "./CreateEquipmentForm";
 import { EditEquipmentForm } from "./EditEquipmentForm";
 import { formatCurrency } from "@/lib/utils";
@@ -82,6 +83,7 @@ interface EquipmentClientProps {
 
 export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
   const { userId } = useAuth();
+  const router = useRouter();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [equipmentToEdit, setEquipmentToEdit] = useState<Equipment | null>(
@@ -184,9 +186,11 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
     }
   };
 
+  const columns = createEquipmentColumns(orgSlug);
+
   const table = useReactTable({
     data: filteredData,
-    columns: equipmentColumns,
+    columns,
     state: {
       sorting,
       columnFilters,
@@ -205,6 +209,9 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
+      onView: (equipment: Equipment) => {
+        router.push(`/${orgSlug}/equipment/${equipment._id}`);
+      },
       onEdit: (equipment: Equipment) => {
         setEquipmentToEdit(equipment);
         setShowEditForm(true);
@@ -389,7 +396,7 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={equipmentColumns.length}
+                      colSpan={columns.length}
                       className="h-24 text-center"
                     >
                       No equipment found.

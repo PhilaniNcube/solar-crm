@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ArrowUpDown,
+  Eye,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -24,7 +26,9 @@ import { formatCurrency } from "@/lib/utils";
 
 export type Equipment = Doc<"equipment">;
 
-export const equipmentColumns: ColumnDef<Equipment>[] = [
+export const createEquipmentColumns = (
+  orgSlug: string
+): ColumnDef<Equipment>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -41,7 +45,12 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex flex-col">
-          <span className="font-medium">{row.getValue("name")}</span>
+          <Link
+            href={`/${orgSlug}/equipment/${row.original._id}`}
+            className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            {row.getValue("name")}
+          </Link>
           {row.original.model && (
             <span className="text-sm text-muted-foreground">
               Model: {row.original.model}
@@ -115,6 +124,7 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
     cell: ({ row, table }) => {
       const equipment = row.original;
       const meta = table.options.meta as {
+        onView: (equipment: Equipment) => void;
         onEdit: (equipment: Equipment) => void;
         onDelete: (equipment: Equipment) => void;
         onToggleStatus: (equipment: Equipment) => void;
@@ -129,13 +139,17 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>{" "}
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(equipment._id)}
             >
               Copy equipment ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => meta.onView(equipment)}>
+              <Eye className="mr-2 h-4 w-4" />
+              View details
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => meta.onEdit(equipment)}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit equipment
@@ -156,9 +170,13 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
               <Trash2 className="mr-2 h-4 w-4" />
               Delete equipment
             </DropdownMenuItem>
-          </DropdownMenuContent>
+          </DropdownMenuContent>{" "}
         </DropdownMenu>
       );
     },
   },
 ];
+
+// For backward compatibility
+export const equipmentColumns = (orgSlug: string) =>
+  createEquipmentColumns(orgSlug);
