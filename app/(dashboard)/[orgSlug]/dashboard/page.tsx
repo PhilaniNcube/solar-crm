@@ -3,6 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getRecentActivity } from "@/lib/queries/activity";
 import { format } from "date-fns";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import ProjectStatuses from "@/components/project-statuses";
 
 interface DashboardPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -10,6 +13,11 @@ interface DashboardPageProps {
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgSlug } = await params;
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
   const activity = await getRecentActivity(orgSlug);
 
@@ -53,7 +61,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           >
             <div className="text-2xl mb-2">📅</div>
             <div className="text-sm font-medium">Schedule</div>
-          </Link>
+          </Link>{" "}
         </div>
       </div>
 

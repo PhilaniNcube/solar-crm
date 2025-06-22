@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 import {
   useReactTable,
   getCoreRowModel,
@@ -31,7 +32,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MoreHorizontal, Edit, Eye, Trash2, Plus } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Eye,
+  Trash2,
+  Plus,
+  Check,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatCurrency } from "@/lib/utils";
@@ -67,8 +76,42 @@ interface QuotesClientProps {
 const columnHelper = createColumnHelper<Quote>();
 
 const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
+  const { user } = useUser();
   const quotes = useQuery(api.quotes.quotes, { orgSlug });
+  const updateQuote = useMutation(api.quotes.updateQuote);
   const [globalFilter, setGlobalFilter] = React.useState("");
+  const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
+
+  const handleUpdateQuoteStatus = async (
+    quoteId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    if (!user) return;
+
+    setIsUpdating(quoteId);
+    try {
+      await updateQuote({
+        quoteId: quoteId as Id<"quotes">,
+        orgSlug,
+        userId: user.id,
+        status,
+      });
+      // You might want to show a success toast here
+    } catch (error) {
+      console.error(
+        `Error ${status === "accepted" ? "accepting" : "rejecting"} quote:`,
+        error
+      );
+      // You might want to show an error toast here
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleAcceptQuote = (quoteId: string) =>
+    handleUpdateQuoteStatus(quoteId, "accepted");
+  const handleRejectQuote = (quoteId: string) =>
+    handleUpdateQuoteStatus(quoteId, "rejected");
 
   const columns = React.useMemo(
     () => [
@@ -139,6 +182,9 @@ const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
         header: "Status",
         cell: (info) => {
           const status = info.getValue();
+          const quote = info.row.original;
+          const isUpdatingThis = isUpdating === quote._id;
+
           const statusConfig = {
             draft: { bg: "bg-gray-100", text: "text-gray-800", label: "Draft" },
             sent: {
@@ -160,9 +206,34 @@ const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
           const config = statusConfig[status] || statusConfig.draft;
 
           return (
-            <Badge className={`${config.bg} ${config.text} hover:${config.bg}`}>
-              {config.label}
-            </Badge>
+            <div className="flex items-center space-x-2">
+              <Badge
+                className={`${config.bg} ${config.text} hover:${config.bg}`}
+              >
+                {config.label}
+              </Badge>
+              {status === "sent" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAcceptQuote(quote._id)}
+                  disabled={isUpdatingThis}
+                  className="h-6 px-2 text-xs text-green-600 border-green-600 hover:bg-green-50"
+                >
+                  {isUpdatingThis ? (
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 border border-green-600 border-t-transparent rounded-full animate-spin mr-1"></div>
+                      Accept
+                    </div>
+                  ) : (
+                    <>
+                      <Check className="mr-1 h-3 w-3" />
+                      Accept
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           );
         },
       }),
@@ -182,10 +253,16 @@ const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
         header: "Actions",
         cell: (info) => {
           const quote = info.row.original;
+          const isUpdatingThis = isUpdating === quote._id;
+
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  disabled={isUpdatingThis}
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -210,6 +287,26 @@ const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
                     </Link>
                   </DropdownMenuItem>
                 )}
+                {quote.status === "sent" && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleAcceptQuote(quote._id)}
+                      disabled={isUpdatingThis}
+                      className="flex items-center text-green-600 focus:text-green-600"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      {isUpdatingThis ? "Accepting..." : "Accept Quote"}
+                    </DropdownMenuItem>{" "}
+                    <DropdownMenuItem
+                      onClick={() => handleRejectQuote(quote._id)}
+                      disabled={isUpdatingThis}
+                      className="flex items-center text-red-600 focus:text-red-600"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      {isUpdatingThis ? "Rejecting..." : "Reject Quote"}
+                    </DropdownMenuItem>
+                  </>
+                )}
                 {quote.status === "accepted" && (
                   <DropdownMenuItem asChild>
                     <Link
@@ -233,7 +330,7 @@ const QuotesClient: React.FC<QuotesClientProps> = ({ orgSlug }) => {
         },
       }),
     ],
-    [orgSlug]
+    [orgSlug, handleAcceptQuote, handleRejectQuote, isUpdating]
   );
 
   const table = useReactTable({

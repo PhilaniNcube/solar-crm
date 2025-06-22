@@ -16,7 +16,9 @@ import type {
 import type * as customers from "../customers.js";
 import type * as equipment from "../equipment.js";
 import type * as leads from "../leads.js";
+import type * as projects from "../projects.js";
 import type * as quotes from "../quotes.js";
+import type * as tasks from "../tasks.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,7 +32,9 @@ declare const fullApi: ApiFromModules<{
   customers: typeof customers;
   equipment: typeof equipment;
   leads: typeof leads;
+  projects: typeof projects;
   quotes: typeof quotes;
+  tasks: typeof tasks;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

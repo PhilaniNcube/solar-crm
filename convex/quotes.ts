@@ -294,3 +294,28 @@ export const deleteQuote = mutation({
     return quoteId;
   },
 });
+
+// Query to get accepted quotes for a specific customer
+export const getAcceptedQuotesByCustomer = query({
+  args: {
+    orgSlug: v.string(),
+    customerId: v.id("customers"),
+  },
+  handler: async (ctx, args) => {
+    const { orgSlug, customerId } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    // Fetch accepted quotes for the given customer
+    const quotes = await ctx.db
+      .query("quotes")
+      .filter((q) => q.eq(q.field("slug"), orgSlug))
+      .filter((q) => q.eq(q.field("customerId"), customerId))
+      .filter((q) => q.eq(q.field("status"), "accepted"))
+      .collect();
+
+    return quotes;
+  },
+});
