@@ -59,6 +59,11 @@ const navigationItems = [
     icon: FolderOpen,
   },
   {
+    title: "Equipment",
+    url: "/equipment",
+    icon: Building2,
+  },
+  {
     title: "Settings",
     url: "/settings",
     icon: Settings,

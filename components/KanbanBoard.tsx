@@ -15,6 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface Lead {
   _id: Id<"leads">;
@@ -76,18 +79,17 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
       );
     }
   );
-
   const handleStatusChange = async (
     leadId: Id<"leads">,
     newStatus: LeadStatus
   ) => {
     if (!user?.id) return;
 
-    // Optimistically update the UI
-    updateOptimisticLeads({ leadId, newStatus });
-
-    // Perform the actual update
+    // Perform the actual update with optimistic update inside transition
     startTransition(async () => {
+      // Optimistically update the UI inside the transition
+      updateOptimisticLeads({ leadId, newStatus });
+
       try {
         await updateLead({
           leadId,
@@ -140,7 +142,10 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
         const statusLeads = groupedLeads[status] || [];
 
         return (
-          <div key={status} className={`${config.bgColor} p-4 rounded-lg`}>
+          <ScrollArea
+            key={status}
+            className={cn("p-4 h-[50vh] rounded", config.bgColor)}
+          >
             <h3 className="font-semibold text-gray-900 mb-4">
               {config.title} ({statusLeads.length})
             </h3>
@@ -193,19 +198,10 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                  </CardHeader>{" "}
-                  <CardContent className="pt-0">
-                    {lead.notes && (
-                      <p className="text-xs text-gray-500 max-w-full overflow-hidden text-ellipsis">
-                        {lead.notes.length > 50
-                          ? `${lead.notes.substring(0, 50)}...`
-                          : lead.notes}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-2">
-                      {new Date(lead.createdAt).toLocaleDateString()}
+                    <p className="text-xs text-gray-400">
+                      Created At: {format(lead.createdAt, "Pp")}
                     </p>
-                  </CardContent>
+                  </CardHeader>{" "}
                 </Card>
               ))}
               {statusLeads.length === 0 && (
@@ -214,7 +210,7 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
                 </div>
               )}
             </div>
-          </div>
+          </ScrollArea>
         );
       })}
     </div>

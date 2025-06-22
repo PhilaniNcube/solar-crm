@@ -39,29 +39,32 @@ export default defineSchema({
   })
     .index("by_org", ["slug"])
     .index("by_user", ["userId"]) // For audit queries
-    .index("by_org_user", ["slug", "userId"]), // Compound index
-
-  // Catalog of equipment (panels, inverters, etc.) for each organization
+    .index("by_org_user", ["slug", "userId"]), // Compound index  // Catalog of equipment (panels, inverters, etc.) for each organization
   equipment: defineTable({
     slug: v.string(),
     userId: v.string(), // From Clerk User - for audit purposes
-    sku: v.optional(v.string()),
     name: v.string(),
-    manufacturer: v.optional(v.string()),
-    type: v.union(
-      v.literal("panel"),
-      v.literal("inverter"),
-      v.literal("battery"),
-      v.literal("mounting"),
-      v.literal("other")
+    category: v.union(
+      v.literal("Solar Panel"),
+      v.literal("Inverter"),
+      v.literal("Battery"),
+      v.literal("Mounting System"),
+      v.literal("Electrical"),
+      v.literal("Tools"),
+      v.literal("Other")
     ),
-    // Use v.any() for flexible specs, or define a strict object
-    specifications: v.any(), // e.g., { wattage: 450, efficiency: 21.5 }
-    costPrice: v.optional(v.number()),
+    manufacturer: v.optional(v.string()),
+    model: v.optional(v.string()),
+    description: v.optional(v.string()),
+    price: v.optional(v.number()),
+    specifications: v.optional(v.string()),
+    warrantyPeriod: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
     createdAt: v.string(), // ISO 8601 timestamp
     updatedAt: v.optional(v.string()), // ISO 8601 timestamp for last update
     updatedBy: v.optional(v.string()), // User ID who last updated
   })
+    .index("by_category", ["category"])
     .index("by_org", ["slug"])
     .index("by_user", ["userId"]), // For audit queries
 
