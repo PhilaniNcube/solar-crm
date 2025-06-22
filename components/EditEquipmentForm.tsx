@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,6 +37,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { Doc } from "@/convex/_generated/dataModel";
 
 const equipmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -74,8 +75,9 @@ const equipmentSchema = z.object({
 
 type EquipmentFormData = z.infer<typeof equipmentSchema>;
 
-interface CreateEquipmentFormProps {
+interface EditEquipmentFormProps {
   orgSlug: string;
+  equipment: Doc<"equipment">;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
@@ -91,15 +93,17 @@ const equipmentCategories = [
   "Other",
 ] as const;
 
-export function CreateEquipmentForm({
+export function EditEquipmentForm({
   orgSlug,
+  equipment,
   open,
   onOpenChange,
   onSuccess,
-}: CreateEquipmentFormProps) {
+}: EditEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userId } = useAuth();
-  const createEquipment = useMutation(api.equipment.createEquipment);
+  const updateEquipment = useMutation(api.equipment.updateEquipment);
+
   const form = useForm<EquipmentFormData>({
     resolver: zodResolver(equipmentSchema),
     defaultValues: {
@@ -119,9 +123,35 @@ export function CreateEquipmentForm({
     control: form.control,
     name: "specifications",
   });
+
+  // Update form when equipment changes
+  useEffect(() => {
+    if (equipment && open) {
+      // Transform specifications object to array format
+      const specificationsArray = equipment.specifications
+        ? Object.entries(equipment.specifications).map(([key, value]) => ({
+            key,
+            value: String(value),
+          }))
+        : [];
+
+      form.reset({
+        name: equipment.name || "",
+        category: equipment.category || "Solar Panel",
+        manufacturer: equipment.manufacturer || "",
+        model: equipment.model || "",
+        description: equipment.description || "",
+        price: equipment.price || "",
+        specifications: specificationsArray,
+        warrantyPeriod: equipment.warrantyPeriod || "",
+        isActive: equipment.isActive ?? true,
+      });
+    }
+  }, [equipment, open, form]);
+
   const onSubmit = async (data: EquipmentFormData) => {
     if (!userId) {
-      toast.error("You must be logged in to create equipment");
+      toast.error("You must be logged in to update equipment");
       return;
     }
 
@@ -140,19 +170,19 @@ export function CreateEquipmentForm({
         }, {} as Record<string, string>),
       };
 
-      await createEquipment({
+      await updateEquipment({
+        equipmentId: equipment._id,
         orgSlug,
         userId,
         ...cleanData,
       });
 
-      toast.success("Equipment created successfully");
-      form.reset();
+      toast.success("Equipment updated successfully");
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error("Error creating equipment:", error);
-      toast.error("Failed to create equipment");
+      console.error("Error updating equipment:", error);
+      toast.error("Failed to update equipment");
     } finally {
       setIsSubmitting(false);
     }
@@ -162,9 +192,9 @@ export function CreateEquipmentForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Equipment</DialogTitle>
+          <DialogTitle>Edit Equipment</DialogTitle>
           <DialogDescription>
-            Add new equipment to your inventory catalog.
+            Update equipment details in your inventory catalog.
           </DialogDescription>
         </DialogHeader>
 
@@ -191,10 +221,7 @@ export function CreateEquipmentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category *</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -213,6 +240,7 @@ export function CreateEquipmentForm({
                 )}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -242,6 +270,7 @@ export function CreateEquipmentForm({
                 )}
               />
             </div>
+
             <FormField
               control={form.control}
               name="description"
@@ -258,7 +287,8 @@ export function CreateEquipmentForm({
                   <FormMessage />
                 </FormItem>
               )}
-            />{" "}
+            />
+
             <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
@@ -278,8 +308,9 @@ export function CreateEquipmentForm({
                     <FormMessage />
                   </FormItem>
                 )}
-              />{" "}
-            </div>{" "}
+              />
+            </div>
+
             {/* Dynamic Specifications Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -352,7 +383,8 @@ export function CreateEquipmentForm({
                   custom specifications for this equipment.
                 </p>
               )}
-            </div>{" "}
+            </div>
+
             <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
@@ -368,6 +400,7 @@ export function CreateEquipmentForm({
                 )}
               />
             </div>
+
             <FormField
               control={form.control}
               name="isActive"
@@ -388,6 +421,7 @@ export function CreateEquipmentForm({
                 </FormItem>
               )}
             />
+
             <DialogFooter>
               <Button
                 type="button"
@@ -398,7 +432,7 @@ export function CreateEquipmentForm({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Equipment"}
+                {isSubmitting ? "Updating..." : "Update Equipment"}
               </Button>
             </DialogFooter>
           </form>

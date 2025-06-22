@@ -73,6 +73,7 @@ import { toast } from "sonner";
 
 import { Equipment, equipmentColumns } from "./equipment-columns";
 import { CreateEquipmentForm } from "./CreateEquipmentForm";
+import { EditEquipmentForm } from "./EditEquipmentForm";
 import { formatCurrency } from "@/lib/utils";
 
 interface EquipmentClientProps {
@@ -82,6 +83,10 @@ interface EquipmentClientProps {
 export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
   const { userId } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [equipmentToEdit, setEquipmentToEdit] = useState<Equipment | null>(
+    null
+  );
   const [equipmentToDelete, setEquipmentToDelete] = useState<Equipment | null>(
     null
   );
@@ -201,8 +206,8 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
       onEdit: (equipment: Equipment) => {
-        // TODO: Implement edit functionality
-        console.log("Edit equipment:", equipment);
+        setEquipmentToEdit(equipment);
+        setShowEditForm(true);
       },
       onDelete: setEquipmentToDelete,
       onToggleStatus: handleToggleStatus,
@@ -421,7 +426,7 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>{" "}
       {/* Create Equipment Form */}
       <CreateEquipmentForm
         orgSlug={orgSlug}
@@ -431,6 +436,23 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
           // Equipment will be refetched automatically due to Convex reactivity
         }}
       />
+      {/* Edit Equipment Form */}
+      {equipmentToEdit && (
+        <EditEquipmentForm
+          orgSlug={orgSlug}
+          equipment={equipmentToEdit}
+          open={showEditForm}
+          onOpenChange={(open) => {
+            setShowEditForm(open);
+            if (!open) {
+              setEquipmentToEdit(null);
+            }
+          }}
+          onSuccess={() => {
+            // Equipment will be refetched automatically due to Convex reactivity
+          }}
+        />
+      )}
       {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={!!equipmentToDelete}

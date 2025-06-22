@@ -57,7 +57,7 @@ export default defineSchema({
     model: v.optional(v.string()),
     description: v.optional(v.string()),
     price: v.optional(v.number()),
-    specifications: v.optional(v.string()),
+    specifications: v.optional(v.any()), // Flexible object for category-specific specs
     warrantyPeriod: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
     createdAt: v.string(), // ISO 8601 timestamp

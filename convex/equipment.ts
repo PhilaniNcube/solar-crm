@@ -141,7 +141,7 @@ export const createEquipment = mutation({
     model: v.optional(v.string()),
     description: v.optional(v.string()),
     price: v.optional(v.number()),
-    specifications: v.optional(v.string()),
+    specifications: v.optional(v.any()),
     warrantyPeriod: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
   },
@@ -174,10 +174,19 @@ export const createEquipment = mutation({
 
     if (!category) {
       throw new Error("Equipment category is required");
-    }
-
-    // Get current timestamp
+    } // Get current timestamp
     const now = new Date().toISOString();
+
+    // Clean specifications - remove empty values
+    const cleanSpecifications =
+      specifications && Object.keys(specifications).length > 0
+        ? Object.fromEntries(
+            Object.entries(specifications).filter(
+              ([key, value]) =>
+                key.trim() && typeof value === "string" && value.trim()
+            )
+          )
+        : undefined;
 
     // Create the equipment item
     const equipmentId = await ctx.db.insert("equipment", {
@@ -189,7 +198,7 @@ export const createEquipment = mutation({
       model: model?.trim(),
       description: description?.trim(),
       price,
-      specifications: specifications?.trim(),
+      specifications: cleanSpecifications,
       warrantyPeriod: warrantyPeriod?.trim(),
       isActive,
       createdAt: now,
@@ -221,7 +230,7 @@ export const updateEquipment = mutation({
     model: v.optional(v.string()),
     description: v.optional(v.string()),
     price: v.optional(v.number()),
-    specifications: v.optional(v.string()),
+    specifications: v.optional(v.any()),
     warrantyPeriod: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
   },
@@ -287,8 +296,19 @@ export const updateEquipment = mutation({
     if (description !== undefined)
       updateData.description = description?.trim() || undefined;
     if (price !== undefined) updateData.price = price;
-    if (specifications !== undefined)
-      updateData.specifications = specifications?.trim() || undefined;
+    if (specifications !== undefined) {
+      // Clean specifications - remove empty values
+      const cleanSpecifications =
+        specifications && Object.keys(specifications).length > 0
+          ? Object.fromEntries(
+              Object.entries(specifications).filter(
+                ([key, value]) =>
+                  key.trim() && typeof value === "string" && value.trim()
+              )
+            )
+          : undefined;
+      updateData.specifications = cleanSpecifications;
+    }
     if (warrantyPeriod !== undefined)
       updateData.warrantyPeriod = warrantyPeriod?.trim() || undefined;
     if (isActive !== undefined) updateData.isActive = isActive;
