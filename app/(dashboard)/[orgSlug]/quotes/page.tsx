@@ -8,12 +8,6 @@ interface QuotesPageProps {
 }
 
 export default async function QuotesPage({ params }: QuotesPageProps) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
   const { orgSlug } = await params;
 
   return <QuotesClient orgSlug={orgSlug} />;

@@ -20,16 +20,7 @@ export default async function CustomersPage({
   params,
   searchParams,
 }: CustomersPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   // Fetch customers data from Convex
   const preloadedCustomers = await preloadQuery(api.customers.getCustomers, {

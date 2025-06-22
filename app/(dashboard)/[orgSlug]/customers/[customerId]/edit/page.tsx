@@ -12,12 +12,7 @@ interface EditCustomerPageProps {
 export default async function EditCustomerPage({
   params,
 }: EditCustomerPageProps) {
-  const { userId } = await auth();
   const { orgSlug, customerId } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
 
   // Fetch customer data
   const customer = await fetchQuery(api.customers.getCustomer, {

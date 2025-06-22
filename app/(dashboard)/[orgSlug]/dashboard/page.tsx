@@ -9,18 +9,7 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  // Redirect if not authenticated
-  if (!userId) {
-    redirect("/");
-  }
-
-  // Check if user has access to this organization
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   const activity = await getRecentActivity(orgSlug);
 

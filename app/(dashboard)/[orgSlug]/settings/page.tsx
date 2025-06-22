@@ -7,16 +7,7 @@ interface SettingsPageProps {
 }
 
 export default async function SettingsPage({ params }: SettingsPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   return (
     <div className="space-y-6">

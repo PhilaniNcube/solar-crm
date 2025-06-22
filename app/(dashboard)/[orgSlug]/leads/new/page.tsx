@@ -14,17 +14,8 @@ export default async function NewLeadPage({
   params,
   searchParams,
 }: NewLeadPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
   const { customerId } = await searchParams;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   // Fetch customers for the dropdown
   const customers = await fetchQuery(api.customers.getCustomers, {

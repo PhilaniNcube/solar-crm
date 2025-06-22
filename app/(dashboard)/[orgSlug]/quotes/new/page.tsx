@@ -18,12 +18,6 @@ interface NewQuotePageProps {
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 const NewQuotePage = async ({ params, searchParams }: NewQuotePageProps) => {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
   const { orgSlug } = await params;
   const { leadId } = await searchParams;
 

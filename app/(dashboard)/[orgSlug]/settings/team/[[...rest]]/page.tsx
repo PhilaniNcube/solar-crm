@@ -9,16 +9,7 @@ interface TeamSettingsPageProps {
 export default async function TeamSettingsPage({
   params,
 }: TeamSettingsPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   return (
     <div className="space-y-6">

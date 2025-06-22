@@ -11,16 +11,7 @@ interface NewCustomerPageProps {
 export default async function NewCustomerPage({
   params,
 }: NewCustomerPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   return (
     <div className="space-y-6">

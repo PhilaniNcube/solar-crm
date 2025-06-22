@@ -11,16 +11,7 @@ interface LeadsPageProps {
 }
 
 export default async function LeadsPage({ params }: LeadsPageProps) {
-  const { userId, orgSlug: currentOrgSlug } = await auth();
   const { orgSlug } = await params;
-
-  if (!userId) {
-    redirect("/");
-  }
-
-  if (!currentOrgSlug || currentOrgSlug !== orgSlug) {
-    notFound();
-  }
 
   // Preload leads data
   const preloadedLeads = await preloadQuery(api.leads.leads, {

@@ -7,9 +7,6 @@ import {
   Users,
   UserCheck,
   FolderOpen,
-  ChevronDown,
-  User2,
-  LogOut,
   DollarSignIcon,
 } from "lucide-react";
 
@@ -26,14 +23,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 

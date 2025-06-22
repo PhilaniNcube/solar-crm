@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
 
 interface QuoteDetailPageProps {
   params: Promise<{
@@ -70,7 +71,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
             <div>
               <p className="text-sm text-muted-foreground">Total Amount</p>
               <p className="font-bold text-xl">
-                ${quote.totalPrice.toFixed(2)}
+                {formatCurrency(quote.totalPrice)}
               </p>
             </div>
           </div>
@@ -94,8 +95,8 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
                   </div>
                   <div className="text-right ml-4">
                     <p className="font-medium">
-                      {item.quantity} × ${item.unitPrice.toFixed(2)} = $
-                      {(item.quantity * item.unitPrice).toFixed(2)}
+                      {item.quantity} × {formatCurrency(item.unitPrice)} =
+                      {formatCurrency(item.quantity * item.unitPrice)}
                     </p>
                   </div>
                 </div>
