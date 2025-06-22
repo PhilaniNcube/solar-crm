@@ -45,6 +45,11 @@ const navigationItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Equipment",
+    url: "/equipment",
+    icon: Building2,
+  },
+  {
     title: "Customers",
     url: "/customers",
     icon: Users,
@@ -55,20 +60,16 @@ const navigationItems = [
     icon: UserCheck,
   },
   {
-    title: "Projects",
-    url: "/projects",
-    icon: FolderOpen,
-  },
-  {
     title: "Quotes",
     url: "/quotes",
     icon: DollarSignIcon,
   },
   {
-    title: "Equipment",
-    url: "/equipment",
-    icon: Building2,
+    title: "Projects",
+    url: "/projects",
+    icon: FolderOpen,
   },
+
   {
     title: "Settings",
     url: "/settings",
