@@ -2,13 +2,15 @@ import React from "react";
 import { EditProjectForm } from "../../../../../../components/EditProjectForm";
 
 interface EditProjectPageProps {
-  params: {
+  params: Promise<{
     orgSlug: string;
     projectId: string;
-  };
+  }>;
 }
 
-const EditProjectPage = ({ params }: EditProjectPageProps) => {
+const EditProjectPage = async ({ params }: EditProjectPageProps) => {
+  const { orgSlug, projectId } = await params;
+
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
@@ -17,7 +19,7 @@ const EditProjectPage = ({ params }: EditProjectPageProps) => {
           Update project status and timeline
         </p>
       </div>
-      <EditProjectForm projectId={params.projectId} orgSlug={params.orgSlug} />
+      <EditProjectForm projectId={projectId} orgSlug={orgSlug} />
     </div>
   );
 };

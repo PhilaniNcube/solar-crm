@@ -20,6 +20,7 @@ import {
 } from "@tanstack/react-table";
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,12 +64,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   ChevronDown,
   Settings,
   Plus,
   Package,
   DollarSign,
   CheckCircle2,
+  FileUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -260,6 +268,7 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
       )}
       {/* Equipment Table */}
       <Card>
+        {" "}
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -267,11 +276,31 @@ export function EquipmentClient({ orgSlug }: EquipmentClientProps) {
               <CardDescription>
                 Manage your solar equipment catalog and inventory
               </CardDescription>
+            </div>{" "}
+            <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={`/${orgSlug}/equipment/parse`}>
+                      <Button variant="outline">
+                        <FileUp className="mr-2 h-4 w-4" />
+                        Parse PDF
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Upload PDF datasheets to automatically extract equipment
+                      data using AI
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button onClick={() => setShowCreateForm(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Equipment
+              </Button>
             </div>
-            <Button onClick={() => setShowCreateForm(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Equipment
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
