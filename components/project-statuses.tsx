@@ -416,7 +416,7 @@ const ProjectStatuses = ({
         </Card>
       </div>{" "}
       {/* Projects Table - Show when there are multiple projects */}
-      {projects.length > 1 && (
+      {projects.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>All Projects</CardTitle>

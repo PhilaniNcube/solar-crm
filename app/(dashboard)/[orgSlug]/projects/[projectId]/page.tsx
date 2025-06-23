@@ -1,7 +1,20 @@
 import React from "react";
+import ProjectDetailClient from "../../../../../components/ProjectDetailClient";
 
-const ProjectPage = () => {
-  return <div>ProjectPage</div>;
+interface ProjectPageProps {
+  params: {
+    orgSlug: string;
+    projectId: string;
+  };
+}
+
+const ProjectPage = ({ params }: ProjectPageProps) => {
+  return (
+    <ProjectDetailClient
+      projectId={params.projectId}
+      orgSlug={params.orgSlug}
+    />
+  );
 };
 
 export default ProjectPage;
