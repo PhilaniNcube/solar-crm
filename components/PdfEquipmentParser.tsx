@@ -468,13 +468,10 @@ export const PdfEquipmentParser = ({
               <p className="text-lg font-medium text-gray-900">
                 {isDragActive
                   ? "Drop the PDF here"
-                  : "Drag & drop a PDF datasheet here, or click to select"}
+                  : "Drag & drop a PDF datasheet here"}
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 Supports PDF files up to 10MB
-              </p>
-              <p className="text-xs text-blue-600 mt-1 font-medium">
-                Click anywhere in this area to browse files
               </p>
             </div>
           </div>
