@@ -131,7 +131,7 @@ export async function POST(
       );
     } // Use AI to extract structured equipment data
     const result = await generateObject({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.5-flash-preview-04-17"),
       schema: z.object({
         equipment: equipmentSchema,
         confidence: z
