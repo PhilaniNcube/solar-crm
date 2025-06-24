@@ -77,11 +77,11 @@ export async function POST(
         { success: false, error: "Only PDF files are supported" },
         { status: 400 }
       );
-    } // Validate file size (4MB limit for Vercel deployment)
-    const maxSize = 4 * 1024 * 1024; // 4MB
+    } // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: "File size too large. Maximum 4MB allowed." },
+        { success: false, error: "File size too large. Maximum 10MB allowed." },
         { status: 400 }
       );
     } // Extract text from PDF using LangChain
