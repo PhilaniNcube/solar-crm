@@ -184,7 +184,6 @@ export const PdfEquipmentParser = ({
       setIsEditing(false);
     }
   }, []);
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -192,6 +191,9 @@ export const PdfEquipmentParser = ({
     },
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024, // 10MB
+    noClick: false, // Explicitly enable click
+    noKeyboard: false, // Enable keyboard navigation
+    disabled: false, // Make sure dropzone is not disabled
   });
   const handleParseDocument = async () => {
     if (!uploadedFile || !user?.id) return;
@@ -449,13 +451,14 @@ export const PdfEquipmentParser = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        {" "}
         {/* File Upload Area */}
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${
             isDragActive
-              ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 hover:border-gray-400"
+              ? "border-blue-400 bg-blue-50 scale-105"
+              : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
           }`}
         >
           <input {...getInputProps()} />
@@ -469,6 +472,9 @@ export const PdfEquipmentParser = ({
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 Supports PDF files up to 10MB
+              </p>
+              <p className="text-xs text-blue-600 mt-1 font-medium">
+                Click anywhere in this area to browse files
               </p>
             </div>
           </div>
