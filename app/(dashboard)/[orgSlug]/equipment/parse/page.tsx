@@ -44,10 +44,10 @@ const EquipmentParserPage = ({ params }: EquipmentParserPageProps) => {
                 to your organization's equipment catalog
               </li>
             </ul>
-          </div>
+          </div>{" "}
           <p className="text-sm text-muted-foreground">
-            Supported formats: PDF files up to 10MB. Works best with
-            manufacturer datasheets and specification documents.
+            Supported formats: PDF files up to 4MB. Works best with manufacturer
+            datasheets and specification documents.
           </p>
         </div>
       </div>
