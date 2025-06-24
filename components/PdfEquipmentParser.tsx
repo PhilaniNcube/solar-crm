@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Button } from "./ui/button";
@@ -126,6 +126,11 @@ export const PdfEquipmentParser = ({
 }: PdfEquipmentParserProps) => {
   const { user } = useUser();
   const createEquipmentMutation = useMutation(api.equipment.createEquipment);
+  const generateUploadUrlMutation = useMutation(
+    api.documents.generateUploadUrl
+  );
+  const uploadDocumentMutation = useMutation(api.documents.uploadDocument);
+  const [documentId, setDocumentId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -136,6 +141,18 @@ export const PdfEquipmentParser = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Query document details when documentId is available
+  const documentData = useQuery(
+    api.documents.getDocument,
+    documentId ? { documentId: documentId as any } : "skip"
+  );
+
+  // Parse document when documentData becomes available
+  useEffect(() => {
+    if (documentData && documentData.fileUrl && isUploading) {
+      parseDocumentFromUrl();
+    }
+  }, [documentData]);
   const form = useForm({
     defaultValues: {
       name: "",
@@ -176,27 +193,79 @@ export const PdfEquipmentParser = ({
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024, // 10MB
   });
-
   const handleParseDocument = async () => {
-    if (!uploadedFile) return;
+    if (!uploadedFile || !user?.id) return;
     setIsUploading(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", uploadedFile);
+      // Step 1: Generate upload URL
+      const uploadUrl = await generateUploadUrlMutation();
 
-      const response = await fetch("/api/documents/parse", {
+      // Step 2: Upload file to Convex storage
+      const uploadResponse = await fetch(uploadUrl, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": uploadedFile.type },
+        body: uploadedFile,
       });
 
-      const result: ParseResponse = await response.json();
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload file to storage");
+      }
+
+      const { storageId } = await uploadResponse.json();
+
+      // Step 3: Create document record
+      const newDocumentId = await uploadDocumentMutation({
+        orgSlug,
+        userId: user.id,
+        fileName: uploadedFile.name,
+        fileType: uploadedFile.type,
+        fileSize: uploadedFile.size,
+        storageId,
+        purpose: "equipment_datasheet",
+        metadata: {
+          originalName: uploadedFile.name,
+          mimeType: uploadedFile.type,
+        },
+      });
+
+      // Set document ID to trigger the query and useEffect
+      setDocumentId(newDocumentId);
+    } catch (err) {
+      const errorMessage = "Failed to upload document";
+      setError(errorMessage);
+      onError?.(errorMessage);
+      console.error("Upload error:", err);
+      setIsUploading(false);
+    }
+  };
+
+  const parseDocumentFromUrl = async () => {
+    if (!documentData?.fileUrl) {
+      setError("Document URL not available");
+      setIsUploading(false);
+      return;
+    }
+
+    try {
+      // Parse the document using the URL
+      const parseResponse = await fetch("/api/documents/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ documentUrl: documentData.fileUrl }),
+      });
+
+      const result: ParseResponse = await parseResponse.json();
 
       if (result.success && result.equipment) {
         setParsedEquipment(result.equipment);
-        setConfidence(result.confidence || 0); // Populate the form with parsed data
+        setConfidence(result.confidence || 0);
+
+        // Populate the form with parsed data
         form.reset({
           name: result.equipment.name || "",
           category: result.equipment.category,
@@ -216,10 +285,10 @@ export const PdfEquipmentParser = ({
         onError?.(errorMessage);
       }
     } catch (err) {
-      const errorMessage = "Failed to upload or parse document";
+      const errorMessage = "Failed to parse document";
       setError(errorMessage);
       onError?.(errorMessage);
-      console.error("Upload error:", err);
+      console.error("Parse error:", err);
     } finally {
       setIsUploading(false);
     }
@@ -231,6 +300,7 @@ export const PdfEquipmentParser = ({
     setError(null);
     setSuccessMessage(null);
     setIsEditing(false);
+    setDocumentId(null);
   };
 
   const handleEditEquipment = () => {
@@ -305,13 +375,12 @@ export const PdfEquipmentParser = ({
       // Show success message
       setSuccessMessage(
         `Equipment "${data.name}" has been created successfully!`
-      );
-
-      // Reset the component state
+      ); // Reset the component state
       setIsEditing(false);
       setParsedEquipment(null);
       setConfidence(null);
       setUploadedFile(null);
+      setDocumentId(null);
 
       // Reset the form
       form.reset({

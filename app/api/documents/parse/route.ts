@@ -58,38 +58,57 @@ export async function POST(
         { success: false, error: "Unauthorized" },
         { status: 401 }
       );
-    }
+    } // Parse the JSON body
+    const body = await request.json();
+    const { documentUrl } = body;
+    console.log("Received document URL:", documentUrl); // Log the URL for debugging
 
-    // Parse the form data
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-
-    if (!file) {
+    if (!documentUrl) {
       return NextResponse.json(
-        { success: false, error: "No file provided" },
+        { success: false, error: "No document URL provided" },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    if (file.type !== "application/pdf") {
+    // Basic URL validation - we'll validate the actual content when we fetch it
+    try {
+      new URL(documentUrl);
+    } catch {
       return NextResponse.json(
-        { success: false, error: "Only PDF files are supported" },
-        { status: 400 }
-      );
-    } // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { success: false, error: "File size too large. Maximum 10MB allowed." },
+        { success: false, error: "Invalid document URL provided" },
         { status: 400 }
       );
     } // Extract text from PDF using LangChain
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
     let pdfText: string;
     try {
-      // Create a temporary blob to use with PDFLoader
+      // Fetch the PDF from the URL
+      const response = await fetch(documentUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+      }
+
+      // Validate content type if available
+      const contentType = response.headers.get("content-type");
+      if (
+        contentType &&
+        !contentType.includes("application/pdf") &&
+        !contentType.includes("pdf")
+      ) {
+        console.warn(
+          `Unexpected content type: ${contentType}, but proceeding with PDF parsing`
+        );
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Validate that this looks like a PDF by checking the header
+      const pdfHeader = buffer.subarray(0, 4).toString();
+      if (!pdfHeader.includes("%PDF")) {
+        throw new Error("File does not appear to be a valid PDF document");
+      }
+
+      // Create a blob to use with PDFLoader
       const blob = new Blob([buffer], { type: "application/pdf" });
       const loader = new PDFLoader(blob, {
         splitPages: false, // We want all text together
@@ -112,7 +131,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Failed to extract text from PDF. Please ensure the PDF is not password-protected or corrupted.",
+            "Failed to extract text from PDF. Please ensure the document is a valid PDF and not password-protected or corrupted.",
         },
         { status: 400 }
       );

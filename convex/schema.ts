@@ -123,7 +123,6 @@ export default defineSchema({
   })
     .index("by_org", ["slug"])
     .index("by_user", ["userId"]), // For audit queries
-
   projectTasks: defineTable({
     slug: v.string(),
     userId: v.string(), // From Clerk User - for audit purposes
@@ -137,4 +136,24 @@ export default defineSchema({
   })
     .index("by_project", ["slug", "projectId"]) // Compound index
     .index("by_user", ["userId"]), // For audit queries
+
+  documents: defineTable({
+    slug: v.string(),
+    userId: v.string(), // From Clerk User - for audit purposes
+    fileName: v.string(),
+    fileType: v.string(),
+    fileSize: v.number(),
+    storageId: v.id("_storage"), // Reference to Convex file storage
+    uploadedAt: v.string(), // ISO 8601 timestamp
+    purpose: v.optional(v.string()), // e.g., "equipment_datasheet", "contract", etc.
+    metadata: v.optional(
+      v.object({
+        originalName: v.optional(v.string()),
+        mimeType: v.optional(v.string()),
+      })
+    ),
+  })
+    .index("by_org", ["slug"])
+    .index("by_user", ["userId"])
+    .index("by_purpose", ["slug", "purpose"]),
 });
