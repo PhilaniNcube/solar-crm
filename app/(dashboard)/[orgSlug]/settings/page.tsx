@@ -39,7 +39,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 
         {/* Equipment Catalog */}
         <Link
-          href={`/${orgSlug}/settings/equipment`}
+          href={`/${orgSlug}/equipment`}
           className="bg-white p-6 rounded-lg shadow border hover:shadow-md transition-shadow"
         >
           <div className="flex items-center space-x-4">

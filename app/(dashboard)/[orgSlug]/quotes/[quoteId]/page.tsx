@@ -157,7 +157,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
             <CardContent>
               <div className="space-y-4">
                 {quote.lineItems.map((item, index) => (
-                  <div key={item.equipmentId}>
+                  <div key={`${item.equipmentId}-${index}`}>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 line-clamp-1">

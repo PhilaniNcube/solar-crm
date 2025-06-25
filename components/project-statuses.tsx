@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Id } from "@/convex/_generated/dataModel";
+import { formatCurrency } from "@/lib/utils";
 
 interface Project {
   _id: Id<"projects">;
@@ -175,7 +176,7 @@ const ProjectStatuses = ({
           return (
             <div>
               <div className="font-medium text-gray-900">
-                ${total?.toLocaleString() || "N/A"}
+                {formatCurrency(total!) || "N/A"}
               </div>
               {version && (
                 <div className="text-sm text-gray-500">v{version}</div>
