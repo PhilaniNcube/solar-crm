@@ -42,8 +42,8 @@ export default function RootLayout({
         >
           <ConvexClientProvider>
             <NuqsAdapter>
-              <header className="flex justify-between items-center p-4 border-b">
-                <h1 className="text-xl font-bold">Solar CRM</h1>
+              <header className="flex justify-between items-center container mx-auto p-4 border-b">
+                <h1 className="text-xl font-bold">Prime Solar CRM</h1>
                 <div className="flex items-center gap-4">
                   <SignedOut>
                     <SignInButton />
