@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { GooglePlacesCard } from "@/components/GooglePlacesCard";
 
 interface CustomerDetailPageProps {
   params: Promise<{ orgSlug: string; customerId: Id<"customers"> }>;
@@ -69,7 +70,7 @@ export default async function CustomerDetailPage({
               <div className="mt-1">
                 <Badge
                   variant={
-                    customer.type === "residential" ? "default" : "secondary"
+                    customer.type === "residential" ? "outline" : "secondary"
                   }
                 >
                   {customer.type === "residential" ? "Residential" : "Business"}
@@ -119,12 +120,7 @@ export default async function CustomerDetailPage({
             <CardDescription>
               Latest leads, quotes, and projects
             </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-500 text-center py-8">
-              No recent activity to display
-            </p>
-            <div className="space-y-2">
+            <div className="flex flex-col md:flex-row gap-2 mt-4">
               <Link href={`/${orgSlug}/leads/new?customerId=${customerId}`}>
                 <Button variant="outline" className="w-full">
                   Create Lead
@@ -136,24 +132,80 @@ export default async function CustomerDetailPage({
                 </Button>
               </Link>
             </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-500 text-center py-8">
+              No recent activity to display
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Success Message */}
-      <Card className="bg-green-50 border-green-200">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <p className="text-green-700 font-medium">
-              Customer created successfully!
-            </p>
-          </div>
-          <p className="text-green-600 text-sm mt-1">
-            You can now create leads and quotes for this customer.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Google Places Integration for Solar Assessment */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GooglePlacesCard
+          customerId={customerId}
+          orgSlug={orgSlug}
+          currentAddress={customer.address || ""}
+          initialCoordinates={
+            customer.latitude && customer.longitude
+              ? {
+                  lat: customer.latitude,
+                  lng: customer.longitude,
+                }
+              : undefined
+          }
+        />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Solar Assessment Ready</CardTitle>
+            <CardDescription>
+              Use location data for Google Solar API
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {customer.latitude && customer.longitude ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                  <span className="text-green-800 font-medium">
+                    ✓ Location data available
+                  </span>
+                  <Button variant="outline" size="sm">
+                    View Solar Potential
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Latitude:</span>
+                    <p className="font-mono">{customer.latitude.toFixed(6)}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Longitude:</span>
+                    <p className="font-mono">{customer.longitude.toFixed(6)}</p>
+                  </div>
+                </div>
+
+                {customer.placeId && (
+                  <div className="text-xs text-gray-500">
+                    Place ID: {customer.placeId}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-2">
+                  Set location coordinates to enable solar assessment
+                </p>
+                <p className="text-xs text-gray-400">
+                  Use the location search to get precise coordinates
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

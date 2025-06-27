@@ -365,3 +365,44 @@ export const getCustomerActivity = query({
     return recentCustomers;
   },
 });
+
+// Mutation to update customer location with Google Places data
+export const updateCustomerLocation = mutation({
+  args: {
+    customerId: v.id("customers"),
+    orgSlug: v.string(),
+    address: v.string(),
+    latitude: v.number(),
+    longitude: v.number(),
+    placeId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { customerId, orgSlug, address, latitude, longitude, placeId } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    // Get the current customer to verify ownership
+    const customer = await ctx.db.get(customerId);
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    // Verify it belongs to the organization
+    if (customer.slug !== orgSlug) {
+      throw new Error("Customer does not belong to this organization");
+    }
+
+    // Update the customer with location data
+    await ctx.db.patch(customerId, {
+      address,
+      latitude,
+      longitude,
+      placeId,
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { success: true };
+  },
+});

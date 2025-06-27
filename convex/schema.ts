@@ -13,6 +13,10 @@ export default defineSchema({
     primaryEmail: v.optional(v.string()),
     primaryPhone: v.optional(v.string()),
     address: v.optional(v.string()),
+    // Google Places API data for solar assessments
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
+    placeId: v.optional(v.string()),
     createdAt: v.string(), // ISO 8601 timestamp
     updatedAt: v.optional(v.string()), // ISO 8601 timestamp for last update
     updatedBy: v.optional(v.string()), // User ID who last updated
