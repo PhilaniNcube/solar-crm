@@ -27,7 +27,7 @@ interface GooglePlacesCardProps {
   };
 }
 
-interface PlaceDetails {
+interface GeocodeResult {
   formatted_address: string;
   geometry: {
     location: {
@@ -47,7 +47,9 @@ export function GooglePlacesCard({
 }: GooglePlacesCardProps) {
   const [searchQuery, setSearchQuery] = useState(currentAddress);
   const [isLoading, setIsLoading] = useState(false);
-  const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
+  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(
+    null
+  );
   const [coordinates, setCoordinates] = useState(initialCoordinates);
 
   const updateCustomerLocation = useMutation(
@@ -73,32 +75,32 @@ export function GooglePlacesCard({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to search places");
+        throw new Error("Failed to geocode address");
       }
 
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        const place = data.results[0];
-        setPlaceDetails(place);
+        const result = data.results[0];
+        setGeocodeResult(result);
         setCoordinates({
-          lat: place.geometry.location.lat,
-          lng: place.geometry.location.lng,
+          lat: result.geometry.location.lat,
+          lng: result.geometry.location.lng,
         });
-        toast.success("Address found successfully!");
+        toast.success("Address geocoded successfully!");
       } else {
         toast.error("No results found for this address");
       }
     } catch (error) {
-      console.error("Error searching places:", error);
-      toast.error("Error searching for address. Please try again.");
+      console.error("Error geocoding address:", error);
+      toast.error("Error geocoding address. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const saveLocation = async () => {
-    if (!placeDetails || !coordinates) {
+    if (!geocodeResult || !coordinates) {
       toast.error("No location data to save");
       return;
     }
@@ -107,10 +109,10 @@ export function GooglePlacesCard({
       await updateCustomerLocation({
         customerId,
         orgSlug,
-        address: placeDetails.formatted_address,
+        address: geocodeResult.formatted_address,
         latitude: coordinates.lat,
         longitude: coordinates.lng,
-        placeId: placeDetails.place_id,
+        placeId: geocodeResult.place_id,
       });
 
       toast.success("Location saved successfully!");
@@ -150,14 +152,14 @@ export function GooglePlacesCard({
         </div>
 
         {/* Results */}
-        {placeDetails && coordinates && (
+        {geocodeResult && coordinates && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div>
               <label className="text-sm font-medium text-gray-700">
                 Formatted Address
               </label>
               <p className="text-sm text-gray-900">
-                {placeDetails.formatted_address}
+                {geocodeResult.formatted_address}
               </p>
             </div>
 
@@ -182,10 +184,10 @@ export function GooglePlacesCard({
 
             <div>
               <label className="text-sm font-medium text-gray-700">
-                Place Types
+                Location Types
               </label>
               <div className="flex flex-wrap gap-1 mt-1">
-                {placeDetails.types.slice(0, 3).map((type) => (
+                {geocodeResult.types.slice(0, 3).map((type) => (
                   <Badge key={type} variant="outline" className="text-xs">
                     {type.replace(/_/g, " ")}
                   </Badge>
@@ -200,7 +202,7 @@ export function GooglePlacesCard({
         )}
 
         {/* Current Coordinates Display */}
-        {coordinates && !placeDetails && (
+        {coordinates && !geocodeResult && (
           <div className="space-y-2 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm font-medium text-blue-900">
               Current Coordinates

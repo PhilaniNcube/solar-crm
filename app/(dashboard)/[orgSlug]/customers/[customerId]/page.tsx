@@ -13,6 +13,7 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { GooglePlacesCard } from "@/components/GooglePlacesCard";
+import { SolarInsightsCard } from "@/components/SolarInsightsCard";
 
 interface CustomerDetailPageProps {
   params: Promise<{ orgSlug: string; customerId: Id<"customers"> }>;
@@ -171,9 +172,12 @@ export default async function CustomerDetailPage({
                   <span className="text-green-800 font-medium">
                     ✓ Location data available
                   </span>
-                  <Button variant="outline" size="sm">
-                    View Solar Potential
-                  </Button>
+                  <Badge
+                    variant="outline"
+                    className="text-green-700 border-green-300"
+                  >
+                    Ready for analysis
+                  </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -186,12 +190,6 @@ export default async function CustomerDetailPage({
                     <p className="font-mono">{customer.longitude.toFixed(6)}</p>
                   </div>
                 </div>
-
-                {customer.placeId && (
-                  <div className="text-xs text-gray-500">
-                    Place ID: {customer.placeId}
-                  </div>
-                )}
               </div>
             ) : (
               <div className="text-center py-8">
@@ -206,6 +204,17 @@ export default async function CustomerDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Solar Insights Section */}
+      {customer.latitude && customer.longitude && (
+        <div className="space-y-6">
+          <SolarInsightsCard
+            latitude={customer.latitude}
+            longitude={customer.longitude}
+            address={customer.address}
+          />
+        </div>
+      )}
     </div>
   );
 }
