@@ -564,3 +564,39 @@ export const toggleTaskCompletion = mutation({
     return taskId;
   },
 });
+
+// Query to get project by quote ID
+export const getProjectByQuote = query({
+  args: {
+    quoteId: v.id("quotes"),
+    orgSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { quoteId, orgSlug } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    // Get the project for this quote
+    const project = await ctx.db
+      .query("projects")
+      .filter((q) => q.eq(q.field("slug"), orgSlug))
+      .filter((q) => q.eq(q.field("quoteId"), quoteId))
+      .first();
+
+    if (!project) {
+      return null;
+    }
+
+    // Get customer and quote details
+    const customer = await ctx.db.get(project.customerId);
+    const quote = await ctx.db.get(project.quoteId);
+
+    return {
+      ...project,
+      customer,
+      quote,
+    };
+  },
+});

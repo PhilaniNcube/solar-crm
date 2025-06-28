@@ -11,7 +11,7 @@ import { DollarSign, FileText, Mail, MapPin, Phone, User } from "lucide-react";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { QuoteStatusUpdater } from "@/components/QuoteStatusUpdater";
-import { CreateProjectDialog } from "@/components/CreateProjectDialog";
+import { ProjectAction } from "@/components/ProjectAction";
 
 interface QuoteDetailPageProps {
   params: Promise<{
@@ -57,7 +57,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <CreateProjectDialog quote={quote} orgSlug={orgSlug} />
+            <ProjectAction quote={quote} orgSlug={orgSlug} />
             <QuoteStatusUpdater quote={quote} orgSlug={orgSlug} />
           </div>
         </div>
