@@ -163,9 +163,14 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
                   <div key={`${item.equipmentId}-${index}`}>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 line-clamp-1">
-                          {item.description}
-                        </h4>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-gray-900 line-clamp-1">
+                            {item.description}
+                          </h4>
+                          <Badge variant="secondary" className="text-xs">
+                            {item.equipmentCategory}
+                          </Badge>
+                        </div>
                         <p className="text-sm text-gray-600 mt-1"></p>
                       </div>
                       <div className="flex items-center space-x-4 mt-3 sm:mt-0">

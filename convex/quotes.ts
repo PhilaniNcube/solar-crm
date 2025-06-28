@@ -84,7 +84,8 @@ export const createQuote = mutation({
       throw new Error("Customer does not belong to this organization");
     }
 
-    // Validate equipment exists and belongs to organization
+    // Validate equipment exists and belongs to organization, and enrich with categories
+    const enrichedLineItems = [];
     for (const item of lineItems) {
       const equipment = await ctx.db.get(item.equipmentId);
       if (!equipment) {
@@ -95,10 +96,16 @@ export const createQuote = mutation({
           `Equipment with ID ${item.equipmentId} does not belong to this organization`
         );
       }
+
+      // Add equipment category to line item
+      enrichedLineItems.push({
+        ...item,
+        equipmentCategory: equipment.category,
+      });
     }
 
     // Calculate total price
-    const totalPrice = lineItems.reduce(
+    const totalPrice = enrichedLineItems.reduce(
       (sum, item) => sum + item.quantity * item.unitPrice,
       0
     );
@@ -120,7 +127,7 @@ export const createQuote = mutation({
       status: "draft",
       systemType,
       totalPrice,
-      lineItems,
+      lineItems: enrichedLineItems,
       notesForCustomer,
       createdAt: new Date().toISOString(),
     });
@@ -196,6 +203,17 @@ export const updateQuote = mutation({
           description: v.string(),
           quantity: v.number(),
           unitPrice: v.number(),
+          equipmentCategory: v.optional(
+            v.union(
+              v.literal("Solar Panel"),
+              v.literal("Inverter"),
+              v.literal("Battery"),
+              v.literal("Mounting System"),
+              v.literal("Electrical"),
+              v.literal("Tools"),
+              v.literal("Other")
+            )
+          ),
         })
       )
     ),
@@ -228,7 +246,9 @@ export const updateQuote = mutation({
     }
 
     // Validate equipment if lineItems are being updated
+    let finalLineItems = quote.lineItems;
     if (updates.lineItems) {
+      const enrichedLineItems = [];
       for (const item of updates.lineItems) {
         const equipment = await ctx.db.get(item.equipmentId);
         if (!equipment) {
@@ -239,24 +259,53 @@ export const updateQuote = mutation({
             `Equipment with ID ${item.equipmentId} does not belong to this organization`
           );
         }
+
+        // Add equipment category to line item
+        enrichedLineItems.push({
+          equipmentId: item.equipmentId,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          equipmentCategory: equipment.category,
+        });
       }
+
+      finalLineItems = enrichedLineItems;
     }
 
     // Calculate new total price if lineItems are updated
     let totalPrice = quote.totalPrice;
     if (updates.lineItems) {
-      totalPrice = updates.lineItems.reduce(
+      totalPrice = finalLineItems.reduce(
         (sum, item) => sum + item.quantity * item.unitPrice,
         0
       );
     }
 
-    await ctx.db.patch(quoteId, {
-      ...updates,
+    // Prepare the update object without lineItems first
+    const updateData: any = {
       totalPrice,
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
-    });
+    };
+
+    // Add other updates (excluding lineItems)
+    if (updates.systemType !== undefined) {
+      updateData.systemType = updates.systemType;
+    }
+    if (updates.notesForCustomer !== undefined) {
+      updateData.notesForCustomer = updates.notesForCustomer;
+    }
+    if (updates.status !== undefined) {
+      updateData.status = updates.status;
+    }
+
+    // Add lineItems if they were updated
+    if (updates.lineItems) {
+      updateData.lineItems = finalLineItems;
+    }
+
+    await ctx.db.patch(quoteId, updateData);
 
     return quoteId;
   },

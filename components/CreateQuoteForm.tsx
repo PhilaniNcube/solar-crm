@@ -321,21 +321,41 @@ export const CreateQuoteForm: React.FC<CreateQuoteFormProps> = ({
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select equipment" />
+                                  <SelectValue
+                                    placeholder="Select equipment"
+                                    className="w-full"
+                                  />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
                                 {equipment.map((eq) => (
                                   <SelectItem key={eq._id} value={eq._id}>
-                                    <div>
+                                    <div className="flex flex-col">
                                       <div className="font-medium">
                                         {eq.name}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {eq.category}
+                                        {eq.manufacturer &&
+                                          ` • ${eq.manufacturer}`}
+                                        {eq.model && ` • ${eq.model}`}
                                       </div>
                                     </div>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
+                            {field.value && (
+                              <div className="mt-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  {
+                                    equipment.find(
+                                      (eq) => eq._id === field.value
+                                    )?.category
+                                  }
+                                </Badge>
+                              </div>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}
@@ -350,6 +370,7 @@ export const CreateQuoteForm: React.FC<CreateQuoteFormProps> = ({
                             <FormControl>
                               <Input
                                 placeholder="Item description"
+                                className="w-[50ch]"
                                 {...field}
                               />
                             </FormControl>

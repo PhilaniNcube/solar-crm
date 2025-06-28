@@ -97,6 +97,15 @@ export default defineSchema({
         description: v.string(),
         quantity: v.number(),
         unitPrice: v.number(),
+        equipmentCategory: v.union(
+          v.literal("Solar Panel"),
+          v.literal("Inverter"),
+          v.literal("Battery"),
+          v.literal("Mounting System"),
+          v.literal("Electrical"),
+          v.literal("Tools"),
+          v.literal("Other")
+        ),
       })
     ),
     notesForCustomer: v.optional(v.string()),
