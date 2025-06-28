@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { fetchQuery, preloadQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { CustomersClient } from "@/components/CustomersClient";
+import { User2, UserPlus } from "lucide-react";
 
 interface CustomersPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -43,7 +44,8 @@ export default async function CustomersPage({
           <p className="text-gray-600">Manage your customer relationships</p>
         </div>
         <Link href={`/${orgSlug}/customers/new`}>
-          <Button className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors rounded-none">
+          <Button className="px-4 py-2">
+            <UserPlus className="mr-2 h-4 w-4" />
             Add Customer
           </Button>
         </Link>

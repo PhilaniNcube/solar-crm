@@ -19,6 +19,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { GooglePlacesCard } from "@/components/GooglePlacesCard";
 import { SolarInsightsCard } from "@/components/SolarInsightsCard";
 import { GoogleMapsView } from "@/components/GoogleMapsView";
+import { LeadItem } from "@/components/LeadItem";
 
 interface RoofSegment {
   pitchDegrees: number;
@@ -37,6 +38,17 @@ export default function CustomerDetailPage() {
   // Use Convex hook to load customer data
   const customer = useQuery(
     api.customers.getCustomer,
+    routeParams.orgSlug && routeParams.customerId
+      ? {
+          customerId: routeParams.customerId,
+          orgSlug: routeParams.orgSlug,
+        }
+      : "skip"
+  );
+
+  // load customers leads
+  const customerLeads = useQuery(
+    api.leads.getCustomerLeads,
     routeParams.orgSlug && routeParams.customerId
       ? {
           customerId: routeParams.customerId,
@@ -182,9 +194,24 @@ export default function CustomerDetailPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-500 text-center py-8">
-              No recent activity to display
-            </p>
+            {customerLeads && customerLeads.length > 0 ? (
+              <div className="space-y-3">
+                {customerLeads.map((lead) => (
+                  <LeadItem
+                    key={lead._id}
+                    lead={lead}
+                    orgSlug={routeParams.orgSlug}
+                    compact={true}
+                    name={customer.name}
+                    email={customer.primaryEmail}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                No recent activity to display
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
