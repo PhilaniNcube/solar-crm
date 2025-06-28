@@ -12,6 +12,7 @@ import {
 } from "@clerk/nextjs";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { QueryClientProvider } from "./QueryClientProvider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -38,37 +39,45 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <script
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
+          />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <ConvexClientProvider>
-            <NuqsAdapter>
-              <header className="flex justify-between items-center container mx-auto p-4 border-b">
-                <h1 className="text-xl font-bold">Prime Solar CRM</h1>
-                <div className="flex items-center gap-4">
-                  <SignedOut>
-                    <SignInButton />
-                    <SignUpButton />
-                  </SignedOut>
-                  <SignedIn>
-                    <div className="flex items-center gap-4">
-                      <OrganizationSwitcher
-                        afterSelectOrganizationUrl="/dashboard"
-                        appearance={{
-                          elements: {
-                            organizationSwitcherTrigger:
-                              "border border-gray-300 rounded-md px-3 py-2",
-                          },
-                        }}
-                      />
-                      <UserButton />
-                    </div>
-                  </SignedIn>
-                </div>
-              </header>
-              {children}
-              <Toaster />
-            </NuqsAdapter>
+            <QueryClientProvider>
+              <NuqsAdapter>
+                <header className="flex justify-between items-center container mx-auto p-4 border-b">
+                  <h1 className="text-xl font-bold">Prime Solar CRM</h1>
+                  <div className="flex items-center gap-4">
+                    <SignedOut>
+                      <SignInButton />
+                      <SignUpButton />
+                    </SignedOut>
+                    <SignedIn>
+                      <div className="flex items-center gap-4">
+                        <OrganizationSwitcher
+                          afterSelectOrganizationUrl="/dashboard"
+                          appearance={{
+                            elements: {
+                              organizationSwitcherTrigger:
+                                "border border-gray-300 rounded-md px-3 py-2",
+                            },
+                          }}
+                        />
+                        <UserButton />
+                      </div>
+                    </SignedIn>
+                  </div>
+                </header>
+                {children}
+                <Toaster />
+              </NuqsAdapter>
+            </QueryClientProvider>
           </ConvexClientProvider>
         </body>
       </html>

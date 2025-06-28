@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
-import { notFound } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { GooglePlacesCard } from "@/components/GooglePlacesCard";
 import { SolarInsightsCard } from "@/components/SolarInsightsCard";
@@ -28,23 +24,17 @@ interface RoofSegment {
   segmentIndex: number;
 }
 
-export default function CustomerDetailPage() {
-  const routeParams = useParams<{
-    orgSlug: string;
-    customerId: Id<"customers">;
-  }>();
+interface CustomerDetailClientProps {
+  customer: any;
+  orgSlug: string;
+  customerId: Id<"customers">;
+}
 
-  // Use Convex hook to load customer data
-  const customer = useQuery(
-    api.customers.getCustomer,
-    routeParams.orgSlug && routeParams.customerId
-      ? {
-          customerId: routeParams.customerId,
-          orgSlug: routeParams.orgSlug,
-        }
-      : "skip"
-  );
-
+export function CustomerDetailClient({
+  customer,
+  orgSlug,
+  customerId,
+}: CustomerDetailClientProps) {
   const [roofSegments, setRoofSegments] = useState<RoofSegment[]>([]);
   const [showRoofOverlay, setShowRoofOverlay] = useState(false);
 
@@ -52,29 +42,6 @@ export default function CustomerDetailPage() {
     setRoofSegments(segments);
     setShowRoofOverlay(segments.length > 0);
   };
-
-  // Handle loading and error states
-  if (!routeParams.orgSlug || !routeParams.customerId) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (customer === undefined) {
-    // Still loading
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (customer === null) {
-    // Customer not found
-    notFound();
-  }
 
   return (
     <div className="space-y-6">
@@ -85,12 +52,10 @@ export default function CustomerDetailPage() {
           <p className="text-gray-600">Customer Details</p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/${routeParams.orgSlug}/customers`}>
+          <Link href={`/${orgSlug}/customers`}>
             <Button variant="outline">Back to Customers</Button>
           </Link>
-          <Link
-            href={`/${routeParams.orgSlug}/customers/${routeParams.customerId}/edit`}
-          >
+          <Link href={`/${orgSlug}/customers/${customerId}/edit`}>
             <Button>Edit Customer</Button>
           </Link>
         </div>
@@ -165,16 +130,12 @@ export default function CustomerDetailPage() {
               Latest leads, quotes, and projects
             </CardDescription>
             <div className="flex flex-col md:flex-row gap-2 mt-4">
-              <Link
-                href={`/${routeParams.orgSlug}/leads/new?customerId=${routeParams.customerId}`}
-              >
+              <Link href={`/${orgSlug}/leads/new?customerId=${customerId}`}>
                 <Button variant="outline" className="w-full">
                   Create Lead
                 </Button>
               </Link>
-              <Link
-                href={`/${routeParams.orgSlug}/quotes/new?customerId=${routeParams.customerId}`}
-              >
+              <Link href={`/${orgSlug}/quotes/new?customerId=${customerId}`}>
                 <Button variant="outline" className="w-full">
                   Create Quote
                 </Button>
@@ -192,8 +153,8 @@ export default function CustomerDetailPage() {
       {/* Google Places Integration for Solar Assessment */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <GooglePlacesCard
-          customerId={routeParams.customerId}
-          orgSlug={routeParams.orgSlug}
+          customerId={customerId}
+          orgSlug={orgSlug}
           currentAddress={customer.address || ""}
           initialCoordinates={
             customer.latitude && customer.longitude
