@@ -20,6 +20,7 @@ import { GooglePlacesCard } from "@/components/GooglePlacesCard";
 import { SolarInsightsCard } from "@/components/SolarInsightsCard";
 import { GoogleMapsView } from "@/components/GoogleMapsView";
 import { LeadItem } from "@/components/LeadItem";
+import { QuoteSummaryCard } from "@/components/QuoteSummaryCard";
 
 interface RoofSegment {
   pitchDegrees: number;
@@ -49,6 +50,17 @@ export default function CustomerDetailPage() {
   // load customers leads
   const customerLeads = useQuery(
     api.leads.getCustomerLeads,
+    routeParams.orgSlug && routeParams.customerId
+      ? {
+          customerId: routeParams.customerId,
+          orgSlug: routeParams.orgSlug,
+        }
+      : "skip"
+  );
+
+  // load customer quotes
+  const customerQuotes = useQuery(
+    api.quotes.getCustomerQuotes,
     routeParams.orgSlug && routeParams.customerId
       ? {
           customerId: routeParams.customerId,
@@ -194,18 +206,47 @@ export default function CustomerDetailPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {customerLeads && customerLeads.length > 0 ? (
-              <div className="space-y-3">
-                {customerLeads.map((lead) => (
-                  <LeadItem
-                    key={lead._id}
-                    lead={lead}
-                    orgSlug={routeParams.orgSlug}
-                    compact={true}
-                    name={customer.name}
-                    email={customer.primaryEmail}
-                  />
-                ))}
+            {(customerLeads && customerLeads.length > 0) ||
+            (customerQuotes && customerQuotes.length > 0) ? (
+              <div className="space-y-6">
+                {/* Leads Section */}
+                {customerLeads && customerLeads.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      Leads ({customerLeads.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {customerLeads.map((lead) => (
+                        <LeadItem
+                          key={lead._id}
+                          lead={lead}
+                          orgSlug={routeParams.orgSlug}
+                          compact={true}
+                          name={customer.name}
+                          email={customer.primaryEmail}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quotes Section */}
+                {customerQuotes && customerQuotes.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      Quotes ({customerQuotes.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {customerQuotes.map((quote) => (
+                        <QuoteSummaryCard
+                          key={quote._id}
+                          quote={quote}
+                          orgSlug={routeParams.orgSlug}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-gray-500 text-center py-8">

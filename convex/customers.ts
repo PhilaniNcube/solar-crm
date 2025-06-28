@@ -19,6 +19,13 @@ export const getCustomers = query({
       .withIndex("by_org", (q) => q.eq("slug", orgSlug))
       .collect();
 
+    // Sort customers by createdAt date in descending order
+    customers.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
+
     return customers;
   },
 });
@@ -76,12 +83,21 @@ export const searchCustomers = query({
 
     const searchTermLower = searchTerm.toLowerCase();
 
-    return customers.filter(
+    const filteredCustomers = customers.filter(
       (customer) =>
         customer.name.toLowerCase().includes(searchTermLower) ||
         (customer.primaryEmail &&
           customer.primaryEmail.toLowerCase().includes(searchTermLower))
     );
+
+    // Sort by newest first
+    filteredCustomers.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return filteredCustomers;
   },
 });
 
@@ -104,6 +120,13 @@ export const getCustomersByType = query({
       .withIndex("by_org", (q) => q.eq("slug", orgSlug))
       .filter((q) => q.eq(q.field("type"), type))
       .collect();
+
+    // Sort by newest first
+    customers.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
 
     return customers;
   },
@@ -361,6 +384,13 @@ export const getCustomerActivity = query({
         )
       )
       .collect();
+
+    // Sort by newest first
+    recentCustomers.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
 
     return recentCustomers;
   },

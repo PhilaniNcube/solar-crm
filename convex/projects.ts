@@ -34,6 +34,13 @@ export const projects = query({
       })
     );
 
+    // Sort projects by createdAt date in descending order
+    projectsWithDetails.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
+
     return projectsWithDetails;
   },
 });
@@ -127,6 +134,13 @@ export const getProjectsByStatus = query({
         };
       })
     );
+
+    // Sort projects by createdAt date in descending order
+    projectsWithDetails.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
 
     return projectsWithDetails;
   },
@@ -391,6 +405,24 @@ export const getProjectTasks = query({
       .filter((q) => q.eq(q.field("slug"), orgSlug))
       .filter((q) => q.eq(q.field("projectId"), projectId))
       .collect();
+
+    // Sort tasks by due date, completed tasks last
+    tasks.sort((a, b) => {
+      const dateA = a.dueDate ? new Date(a.dueDate) : new Date(0);
+      const dateB = b.dueDate ? new Date(b.dueDate) : new Date(0);
+
+      // If both tasks are completed, sort by due date
+      if (a.isCompleted && b.isCompleted) {
+        return dateA.getTime() - dateB.getTime();
+      }
+
+      // If only one task is completed, it goes last
+      if (a.isCompleted) return 1;
+      if (b.isCompleted) return -1;
+
+      // Otherwise, sort by due date
+      return dateA.getTime() - dateB.getTime();
+    });
 
     return tasks;
   },

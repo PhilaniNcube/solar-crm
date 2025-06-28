@@ -17,7 +17,16 @@ export const leads = query({
     const leads = await ctx.db
       .query("leads")
       .filter((q) => q.eq(q.field("slug"), orgSlug))
-      .collect(); // return leads with the customer name and type included
+      .collect();
+
+    // Sort leads by newest first
+    leads.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // return leads with the customer name and type included
     const leadsWithCustomerNames = await Promise.all(
       leads.map(async (lead) => {
         const customer = await ctx.db.get(lead.customerId);
@@ -238,6 +247,13 @@ export const getCustomerLeads = query({
       .query("leads")
       .filter((q) => q.eq(q.field("customerId"), customerId))
       .collect();
+
+    // Sort leads by newest first
+    leads.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
 
     return leads;
   },

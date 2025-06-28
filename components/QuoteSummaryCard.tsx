@@ -1,14 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, DollarSign, Calendar, Zap, Eye, Edit } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  FileText,
+  DollarSign,
+  Calendar,
+  Zap,
+  Eye,
+  Edit,
+  ChevronDown,
+} from "lucide-react";
 import Link from "next/link";
 import { Doc } from "@/convex/_generated/dataModel";
 import { formatCurrency } from "@/lib/utils";
 import { formatDate } from "date-fns";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 interface QuoteSummaryCardProps {
   quote: Doc<"quotes">;
@@ -16,6 +33,34 @@ interface QuoteSummaryCardProps {
 }
 
 export function QuoteSummaryCard({ quote, orgSlug }: QuoteSummaryCardProps) {
+  const { user } = useUser();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const updateQuoteStatus = useMutation(api.quotes.updateQuoteStatus);
+
+  const handleStatusChange = async (newStatus: Doc<"quotes">["status"]) => {
+    if (!user?.id) return;
+
+    setIsUpdating(true);
+    try {
+      await updateQuoteStatus({
+        quoteId: quote._id,
+        orgSlug,
+        userId: user.id,
+        status: newStatus,
+      });
+    } catch (error) {
+      console.error("Failed to update quote status:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const statusOptions: { value: Doc<"quotes">["status"]; label: string }[] = [
+    { value: "draft", label: "Draft" },
+    { value: "sent", label: "Sent" },
+    { value: "accepted", label: "Accepted" },
+    { value: "rejected", label: "Rejected" },
+  ];
   const getStatusColor = (status: string) => {
     switch (status) {
       case "draft":
@@ -58,9 +103,49 @@ export function QuoteSummaryCard({ quote, orgSlug }: QuoteSummaryCardProps) {
               Quote v{quote.version}
             </span>
           </div>
-          <Badge className={getStatusColor(quote.status)} variant="secondary">
-            {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
-          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="cursor-pointer">
+                <Badge
+                  className={`${getStatusColor(
+                    quote.status
+                  )} flex items-center space-x-1 hover:opacity-80 transition-opacity`}
+                  variant="secondary"
+                >
+                  <span>
+                    {quote.status.charAt(0).toUpperCase() +
+                      quote.status.slice(1)}
+                  </span>
+                  {!isUpdating && <ChevronDown className="h-3 w-3" />}
+                  {isUpdating && (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                  )}
+                </Badge>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {statusOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => handleStatusChange(option.value)}
+                  disabled={isUpdating || option.value === quote.status}
+                  className={option.value === quote.status ? "bg-gray-50" : ""}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        getStatusColor(option.value).split(" ")[0]
+                      }`}
+                    />
+                    <span>{option.label}</span>
+                    {option.value === quote.status && (
+                      <span className="text-xs text-gray-500">(current)</span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="space-y-3">

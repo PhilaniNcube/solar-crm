@@ -30,6 +30,13 @@ export const quotes = query({
       })
     );
 
+    // Sort quotes by createdAt date in descending order
+    quotesWithCustomerNames.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
+
     return quotesWithCustomerNames;
   },
 });
@@ -316,6 +323,13 @@ export const getAcceptedQuotesByCustomer = query({
       .filter((q) => q.eq(q.field("status"), "accepted"))
       .collect();
 
+    // sort quotes by createdAt date in descending order
+    quotes.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
+
     return quotes;
   },
 });
@@ -340,6 +354,59 @@ export const getCustomerQuotes = query({
       .filter((q) => q.eq(q.field("customerId"), customerId))
       .collect();
 
+    // Sort quotes by createdAt date in descending order
+    quotes.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB.getTime() - dateA.getTime(); // Sort by most recent first
+    });
+
     return quotes;
+  },
+});
+
+// Mutation to update quote status only
+export const updateQuoteStatus = mutation({
+  args: {
+    quoteId: v.id("quotes"),
+    orgSlug: v.string(),
+    userId: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("sent"),
+      v.literal("accepted"),
+      v.literal("rejected")
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { quoteId, orgSlug, userId, status } = args;
+
+    if (!orgSlug) {
+      throw new Error("Organization slug is required");
+    }
+
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    // Get the quote
+    const quote = await ctx.db.get(quoteId);
+    if (!quote) {
+      throw new Error("Quote not found");
+    }
+
+    // Verify it belongs to the organization
+    if (quote.slug !== orgSlug) {
+      throw new Error("Quote does not belong to this organization");
+    }
+
+    // Update the quote status
+    await ctx.db.patch(quoteId, {
+      status,
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId,
+    });
+
+    return { success: true, status };
   },
 });
