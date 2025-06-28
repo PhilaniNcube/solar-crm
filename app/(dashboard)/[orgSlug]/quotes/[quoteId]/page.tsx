@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, FileText, Mail, MapPin, Phone, User } from "lucide-react";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import { QuoteStatusUpdater } from "@/components/QuoteStatusUpdater";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 
 interface QuoteDetailPageProps {
   params: Promise<{
@@ -54,9 +56,10 @@ const QuoteDetailPage = async ({ params }: QuoteDetailPageProps) => {
               Quote #1 for {quote.customer.name}
             </p>
           </div>
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            {quote.status}
-          </Badge>
+          <div className="flex items-center space-x-4">
+            <CreateProjectDialog quote={quote} orgSlug={orgSlug} />
+            <QuoteStatusUpdater quote={quote} orgSlug={orgSlug} />
+          </div>
         </div>
       </div>
 
