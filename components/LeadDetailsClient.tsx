@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { QuoteSummaryCard } from "./QuoteSummaryCard";
 
 interface LeadDetailsClientProps {
   orgSlug: string;
@@ -38,6 +41,11 @@ export function LeadDetailsClient({
   leadData,
 }: LeadDetailsClientProps) {
   const { customer, ...lead } = leadData;
+
+  const quotesData = useQuery(api.quotes.getCustomerQuotes, {
+    orgSlug,
+    customerId: customer._id,
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -248,7 +256,7 @@ export function LeadDetailsClient({
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {customer.primaryPhone && (
+              {/* {customer.primaryPhone && (
                 <Button variant="outline" className="w-full justify-start">
                   <Phone className="mr-2 h-4 w-4" />
                   Call Customer
@@ -263,13 +271,13 @@ export function LeadDetailsClient({
               <Button variant="outline" className="w-full justify-start">
                 <Calendar className="mr-2 h-4 w-4" />
                 Schedule Assessment
-              </Button>
-              <Button className="w-full justify-start" asChild>
-                <Link href={`/${orgSlug}/quotes/new?leadId=${leadId}`}>
+              </Button> */}
+              <Link href={`/${orgSlug}/quotes/new?leadId=${leadId}`}>
+                <Button className="w-full">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Create Quote
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -319,15 +327,43 @@ export function LeadDetailsClient({
               <CardTitle>Related Records</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-gray-600">
-                <p>No quotes or projects yet.</p>
-                <Link
-                  href={`/${orgSlug}/quotes/new?leadId=${leadId}`}
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Create the first quote →
-                </Link>
-              </div>
+              {quotesData && quotesData.length > 0 ? (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      Quotes ({quotesData.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {quotesData.map((quote) => (
+                        <QuoteSummaryCard
+                          key={quote._id}
+                          quote={quote}
+                          orgSlug={orgSlug}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Add spacing before the create new quote link */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <Link
+                      href={`/${orgSlug}/quotes/new?leadId=${leadId}`}
+                      className="text-blue-600 hover:text-blue-800 underline text-sm"
+                    >
+                      Create another quote →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-600">
+                  <p>No quotes or projects yet.</p>
+                  <Link
+                    href={`/${orgSlug}/quotes/new?leadId=${leadId}`}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Create the first quote →
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

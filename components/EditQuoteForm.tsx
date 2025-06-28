@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Trash2, Plus } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
+import { formatCurrency } from "@/lib/utils";
 
 const lineItemSchema = z.object({
   equipmentId: z.string(),
@@ -328,8 +329,8 @@ export const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
                                         {eq.name}
                                       </div>
                                       <div className="text-sm text-muted-foreground">
-                                        {eq.manufacturer} {eq.model} - $
-                                        {eq.price?.toFixed(2) || "0.00"}
+                                        {eq.manufacturer} {eq.model} -
+                                        {formatCurrency(eq.price) || "0.00"}
                                       </div>
                                     </div>
                                   </SelectItem>
@@ -408,11 +409,10 @@ export const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
                       <div className="flex justify-between text-sm">
                         <span>Line Total:</span>
                         <span className="font-medium">
-                          $
-                          {(
+                          {formatCurrency(
                             (form.watch(`lineItems.${index}.quantity`) || 0) *
-                            (form.watch(`lineItems.${index}.unitPrice`) || 0)
-                          ).toFixed(2)}
+                              (form.watch(`lineItems.${index}.unitPrice`) || 0)
+                          )}
                         </span>
                       </div>
                     </div>
@@ -464,7 +464,7 @@ export const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
                   Total Quote Amount:
                 </span>
                 <span className="text-2xl font-bold text-primary">
-                  ${calculateTotal().toFixed(2)}
+                  {formatCurrency(calculateTotal())}
                 </span>
               </div>
               <Separator className="my-4" />
