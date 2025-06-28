@@ -40,13 +40,13 @@ export default async function CustomersPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
           <p className="text-gray-600">Manage your customer relationships</p>
         </div>
         <Link href={`/${orgSlug}/customers/new`}>
           <Button className="px-4 py-2">
             <UserPlus className="mr-2 h-4 w-4" />
-            Add Customer
+            Add Contact
           </Button>
         </Link>
       </div>{" "}

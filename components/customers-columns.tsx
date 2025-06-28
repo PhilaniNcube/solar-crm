@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { format, getYear, parseISO } from "date-fns";
+import { format, getYear, parseISO, differenceInDays } from "date-fns";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,24 @@ const getYearFromDate = (dateString: string) => {
   }
 };
 
+const getDaysSinceCreated = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    const today = new Date();
+    const days = differenceInDays(today, date);
+
+    if (days === 0) {
+      return "Today";
+    } else if (days === 1) {
+      return "1 day ago";
+    } else {
+      return `${days} days ago`;
+    }
+  } catch {
+    return "Unknown";
+  }
+};
+
 export const createColumns = (orgSlug: string): ColumnDef<Customer>[] => [
   {
     accessorKey: "name",
@@ -65,7 +83,7 @@ export const createColumns = (orgSlug: string): ColumnDef<Customer>[] => [
         <div>
           <div className="font-medium text-gray-900">{customer.name}</div>
           <div className="text-sm text-gray-500" suppressHydrationWarning>
-            Customer since {getYearFromDate(customer.createdAt)}
+            Created {getDaysSinceCreated(customer.createdAt)}
           </div>
         </div>
       );
