@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar as CalendarDisplay } from "@/components/ui/calendar";
 import {
   Calendar,
   User,
@@ -35,6 +36,9 @@ const ProjectDetailClient: React.FC<ProjectDetailClientProps> = ({
 }) => {
   const { user } = useUser();
   const [taskRefreshTrigger, setTaskRefreshTrigger] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
 
   const project = useQuery(api.projects.getProject, {
     projectId: projectId as Id<"projects">,
@@ -132,15 +136,85 @@ const ProjectDetailClient: React.FC<ProjectDetailClientProps> = ({
     return new Date(task.dueDate) < new Date();
   });
 
+  // Get milestone dates for calendar highlighting
+  const getMilestoneDates = () => {
+    const milestones: { date: Date; type: string; label: string }[] = [];
+
+    // Project created date
+    milestones.push({
+      date: new Date(project.createdAt),
+      type: "created",
+      label: "Project Created",
+    });
+
+    // Start date
+    if (project.startDate) {
+      milestones.push({
+        date: new Date(project.startDate),
+        type: "start",
+        label: "Start Date",
+      });
+    }
+
+    // Completion date
+    if (project.completionDate) {
+      milestones.push({
+        date: new Date(project.completionDate),
+        type: "completion",
+        label: "Target Completion",
+      });
+    }
+
+    // Task due dates
+    project.tasks?.forEach((task) => {
+      if (task.dueDate) {
+        const isOverdue = new Date(task.dueDate) < new Date();
+        milestones.push({
+          date: new Date(task.dueDate),
+          type: task.isCompleted
+            ? "task-completed"
+            : isOverdue
+            ? "task-overdue"
+            : "task-pending",
+          label: task.title,
+        });
+      }
+    });
+
+    return milestones;
+  };
+
+  const milestoneDates = getMilestoneDates();
+
+  // Create date matchers for calendar
+  const createdDates = milestoneDates
+    .filter((m) => m.type === "created")
+    .map((m) => m.date);
+  const startDates = milestoneDates
+    .filter((m) => m.type === "start")
+    .map((m) => m.date);
+  const completionDates = milestoneDates
+    .filter((m) => m.type === "completion")
+    .map((m) => m.date);
+  const taskCompletedDates = milestoneDates
+    .filter((m) => m.type === "task-completed")
+    .map((m) => m.date);
+  const taskPendingDates = milestoneDates
+    .filter((m) => m.type === "task-pending")
+    .map((m) => m.date);
+  const taskOverdueDates = milestoneDates
+    .filter((m) => m.type === "task-overdue")
+    .map((m) => m.date);
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Project {project._id.toString().slice(0, 8).toUpperCase()}
-            </h1>
+            <h2 className="text-lg font-bold text-gray-900">
+              Project ID {project._id.toString().slice(0, 8).toUpperCase()}
+            </h2>
             <Badge className={`${statusConfig.bg} ${statusConfig.text}`}>
               <StatusIcon className="mr-1 h-3 w-3" />
               {statusConfig.label}
@@ -403,41 +477,122 @@ const ProjectDetailClient: React.FC<ProjectDetailClientProps> = ({
             </CardContent>
           </Card>
 
-          {/* Project Timeline */}
+          {/* Project Calendar */}
           <Card>
             <CardHeader>
-              <CardTitle>Timeline</CardTitle>
+              <CardTitle>Project Calendar</CardTitle>
+              <p className="text-sm text-gray-500">
+                Milestones and task due dates
+              </p>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <div>
-                  <p className="text-sm font-medium">Project Created</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </p>
+            <CardContent>
+              <CalendarDisplay
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md w-full"
+                modifiers={{
+                  created: createdDates,
+                  start: startDates,
+                  completion: completionDates,
+                  taskCompleted: taskCompletedDates,
+                  taskPending: taskPendingDates,
+                  taskOverdue: taskOverdueDates,
+                }}
+                modifiersStyles={{
+                  created: {
+                    backgroundColor: "#dbeafe",
+                    color: "#1e40af",
+                    fontWeight: "bold",
+                  },
+                  start: {
+                    backgroundColor: "#dcfce7",
+                    color: "#166534",
+                    fontWeight: "bold",
+                  },
+                  completion: {
+                    backgroundColor: "#fef3c7",
+                    color: "#92400e",
+                    fontWeight: "bold",
+                  },
+                  taskCompleted: {
+                    backgroundColor: "#d1fae5",
+                    color: "#065f46",
+                  },
+                  taskPending: {
+                    backgroundColor: "#e0e7ff",
+                    color: "#3730a3",
+                  },
+                  taskOverdue: {
+                    backgroundColor: "#fee2e2",
+                    color: "#991b1b",
+                    fontWeight: "bold",
+                  },
+                }}
+              />
+
+              {/* Legend */}
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-gray-700">Legend:</p>
+                <div className="grid grid-cols-1 gap-1 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
+                    <span>Project Created</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
+                    <span>Start Date</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded"></div>
+                    <span>Target Completion</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-50 border border-green-200 rounded"></div>
+                    <span>Task Completed</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-50 border border-blue-200 rounded"></div>
+                    <span>Task Due</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
+                    <span>Task Overdue</span>
+                  </div>
                 </div>
               </div>
-              {project.startDate && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Start Date</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(project.startDate).toLocaleDateString()}
+
+              {/* Selected Date Info */}
+              {selectedDate && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium mb-2">
+                    {selectedDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  {milestoneDates
+                    .filter(
+                      (milestone) =>
+                        milestone.date.toDateString() ===
+                        selectedDate.toDateString()
+                    )
+                    .map((milestone, index) => (
+                      <div key={index} className="text-sm text-gray-600">
+                        • {milestone.label}
+                      </div>
+                    ))}
+                  {milestoneDates.filter(
+                    (milestone) =>
+                      milestone.date.toDateString() ===
+                      selectedDate.toDateString()
+                  ).length === 0 && (
+                    <p className="text-sm text-gray-500">
+                      No events on this date
                     </p>
-                  </div>
-                </div>
-              )}
-              {project.completionDate && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Target Completion</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(project.completionDate).toLocaleDateString()}
-                    </p>
-                  </div>
+                  )}
                 </div>
               )}
             </CardContent>
