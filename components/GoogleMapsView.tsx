@@ -147,85 +147,90 @@ export function GoogleMapsView({
         </div>
 
         {/* Map Container */}
-        <div className="relative w-full h-96 rounded-lg border border-gray-200 overflow-hidden">
+        <div className="relative w-full rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-4">
           <GoogleMapsEmbed
             apiKey={
               process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
               process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY ||
               ""
             }
-            height={384}
+            height="660px"
             width="100%"
             mode={embedMode}
-            q={mapQuery}
-            zoom="19"
+            q={address}
+            zoom="21"
             maptype={mapType}
             style="border-radius: 8px;"
           />
+          {/* Roof Segments Information Panel (replaces overlay since GoogleMapsEmbed doesn't support overlays) */}
+          {showOverlay && roofSegments.length > 0 && (
+            <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50">
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-blue-800">
+                <Layers className="h-4 w-4" />
+                Roof Segments Analysis
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {roofSegments.map((segment, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg p-3 border-l-4 shadow-sm"
+                    style={{ borderLeftColor: colors[index % colors.length] }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: colors[index % colors.length],
+                        }}
+                      />
+                      <span className="font-medium text-sm">
+                        Segment {segment.segmentIndex + 1}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-700">
+                      <div className="flex justify-between">
+                        <span>Panels:</span>
+                        <span className="font-medium">
+                          {segment.panelsCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pitch:</span>
+                        <span className="font-medium">
+                          {segment.pitchDegrees}°
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Direction:</span>
+                        <span className="font-medium">
+                          {segment.azimuthDegrees}° (
+                          {getCompassDirection(segment.azimuthDegrees)})
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Energy/Year:</span>
+                        <span className="font-medium text-green-600">
+                          {Math.round(
+                            segment.yearlyEnergyDcKwh
+                          ).toLocaleString()}{" "}
+                          kWh
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-800 flex items-start gap-2">
+                <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <span>
+                  Each segment represents a distinct roof surface with unique
+                  solar characteristics. The colors correspond to different roof
+                  segments analyzed by the Solar API.
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Roof Segments Information Panel (replaces overlay since GoogleMapsEmbed doesn't support overlays) */}
-        {showOverlay && roofSegments.length > 0 && (
-          <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50 to-green-50">
-            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-blue-800">
-              <Layers className="h-4 w-4" />
-              Roof Segments Analysis
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {roofSegments.map((segment, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-3 border-l-4 shadow-sm"
-                  style={{ borderLeftColor: colors[index % colors.length] }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: colors[index % colors.length] }}
-                    />
-                    <span className="font-medium text-sm">
-                      Segment {segment.segmentIndex + 1}
-                    </span>
-                  </div>
-                  <div className="space-y-1 text-xs text-gray-700">
-                    <div className="flex justify-between">
-                      <span>Panels:</span>
-                      <span className="font-medium">{segment.panelsCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Pitch:</span>
-                      <span className="font-medium">
-                        {segment.pitchDegrees}°
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Direction:</span>
-                      <span className="font-medium">
-                        {segment.azimuthDegrees}° (
-                        {getCompassDirection(segment.azimuthDegrees)})
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Energy/Year:</span>
-                      <span className="font-medium text-green-600">
-                        {Math.round(segment.yearlyEnergyDcKwh).toLocaleString()}{" "}
-                        kWh
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-800 flex items-start gap-2">
-              <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-              <span>
-                Each segment represents a distinct roof surface with unique
-                solar characteristics. The colors correspond to different roof
-                segments analyzed by the Solar API.
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Coordinates Info */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
@@ -233,9 +238,6 @@ export function GoogleMapsView({
             <span className="font-medium">Coordinates:</span>{" "}
             {latitude.toFixed(6)}, {longitude.toFixed(6)}
           </div>
-          <Badge variant="outline" className="text-xs">
-            Zoom: 19 (Building Level)
-          </Badge>
         </div>
 
         {/* Solar Assessment Note */}
