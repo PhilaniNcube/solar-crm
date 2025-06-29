@@ -39,7 +39,7 @@ const navigationItems = [
     icon: Building2,
   },
   {
-    title: "Customers",
+    title: "Contacts",
     url: "/customers",
     icon: Users,
   },

@@ -18,6 +18,7 @@ import { MoreVertical } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 interface Lead {
   _id: Id<"leads">;
@@ -66,6 +67,8 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
   const { user } = useUser();
   const [isPending, startTransition] = useTransition();
   const updateLead = useMutation(api.leads.updateLead);
+
+  const router = useRouter();
 
   // Optimistic updates for lead status changes
   const [optimisticLeads, updateOptimisticLeads] = useOptimistic(
@@ -142,75 +145,81 @@ export function KanbanBoard({ leads, orgSlug }: KanbanBoardProps) {
         const statusLeads = groupedLeads[status] || [];
 
         return (
-          <ScrollArea
+          <div
             key={status}
-            className={cn("p-4 h-[50vh] rounded", config.bgColor)}
+            className={cn(config.bgColor, "rounded-lg shadow py-2")}
           >
-            <h3 className="font-semibold text-gray-900 mb-4">
+            <h3 className="font-semibold text-gray-900 text-lg px-4">
               {config.title} ({statusLeads.length})
             </h3>
-            <div className="space-y-3">
-              {statusLeads.map((lead) => (
-                <Card key={lead._id} className="bg-white shadow-sm">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-sm font-medium">
-                          {lead.customerName || `Customer ${lead.customerId}`}
-                        </CardTitle>
-                        <div className="flex items-center gap-2 mt-1">
-                          {lead.customerType && (
-                            <Badge variant="outline" className="text-xs">
-                              {lead.customerType}
-                            </Badge>
-                          )}
-                          {lead.source && (
-                            <Badge variant="outline" className="text-xs">
-                              {lead.source}
-                            </Badge>
-                          )}
+            <ScrollArea className={cn("p-4 h-[50vh] rounded", config.bgColor)}>
+              <div className="space-y-3">
+                {statusLeads.map((lead) => (
+                  <Card
+                    key={lead._id}
+                    className="bg-white shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-200"
+                    onClick={() => router.push(`/${orgSlug}/leads/${lead._id}`)}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-sm font-medium">
+                            {lead.customerName || `Customer ${lead.customerId}`}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            {lead.customerType && (
+                              <Badge variant="outline" className="text-xs">
+                                {lead.customerType}
+                              </Badge>
+                            )}
+                            {lead.source && (
+                              <Badge variant="outline" className="text-xs">
+                                {lead.source}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {getAvailableStatuses(lead.status).map(
+                              (newStatus) => (
+                                <DropdownMenuItem
+                                  key={newStatus}
+                                  onClick={() =>
+                                    handleStatusChange(lead._id, newStatus)
+                                  }
+                                  disabled={isPending}
+                                >
+                                  Move to {formatStatusLabel(newStatus)}
+                                </DropdownMenuItem>
+                              )
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                          >
-                            <MoreVertical className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {getAvailableStatuses(lead.status).map(
-                            (newStatus) => (
-                              <DropdownMenuItem
-                                key={newStatus}
-                                onClick={() =>
-                                  handleStatusChange(lead._id, newStatus)
-                                }
-                                disabled={isPending}
-                              >
-                                Move to {formatStatusLabel(newStatus)}
-                              </DropdownMenuItem>
-                            )
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      Created At: {format(lead.createdAt, "Pp")}
-                    </p>
-                  </CardHeader>{" "}
-                </Card>
-              ))}
-              {statusLeads.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">No leads in this stage</p>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                      <p className="text-xs text-gray-400">
+                        Created At: {format(lead.createdAt, "Pp")}
+                      </p>
+                    </CardHeader>{" "}
+                  </Card>
+                ))}
+                {statusLeads.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">No leads in this stage</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         );
       })}
     </div>
