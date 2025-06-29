@@ -16,6 +16,7 @@ import type {
 import type * as customers from "../customers.js";
 import type * as documents from "../documents.js";
 import type * as equipment from "../equipment.js";
+import type * as leadNotes from "../leadNotes.js";
 import type * as leads from "../leads.js";
 import type * as projects from "../projects.js";
 import type * as quotes from "../quotes.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   customers: typeof customers;
   documents: typeof documents;
   equipment: typeof equipment;
+  leadNotes: typeof leadNotes;
   leads: typeof leads;
   projects: typeof projects;
   quotes: typeof quotes;

@@ -45,6 +45,19 @@ export default defineSchema({
     .index("by_user", ["userId"]) // For audit queries
     .index("by_org_user", ["slug", "userId"]), // Compound index  // Catalog of equipment (panels, inverters, etc.) for each organization
 
+  leadNotes: defineTable({
+    slug: v.string(),
+    userId: v.string(), // From Clerk User - for audit purposes
+    leadId: v.id("leads"),
+    content: v.string(),
+    createdAt: v.string(), // ISO 8601 timestamp
+    updatedAt: v.optional(v.string()), // ISO 8601 timestamp for last update
+    updatedBy: v.optional(v.string()), // User ID who last updated
+  })
+    .index("by_lead", ["slug", "leadId"]) // Compound index for fast lookups by lead
+    .index("by_org", ["slug"])
+    .index("by_user", ["userId"]), // For audit queries
+
   equipment: defineTable({
     slug: v.string(),
     userId: v.string(), // From Clerk User - for audit purposes
@@ -97,14 +110,16 @@ export default defineSchema({
         description: v.string(),
         quantity: v.number(),
         unitPrice: v.number(),
-        equipmentCategory: v.union(
-          v.literal("Solar Panel"),
-          v.literal("Inverter"),
-          v.literal("Battery"),
-          v.literal("Mounting System"),
-          v.literal("Electrical"),
-          v.literal("Tools"),
-          v.literal("Other")
+        equipmentCategory: v.optional(
+          v.union(
+            v.literal("Solar Panel"),
+            v.literal("Inverter"),
+            v.literal("Battery"),
+            v.literal("Mounting System"),
+            v.literal("Electrical"),
+            v.literal("Tools"),
+            v.literal("Other")
+          )
         ),
       })
     ),

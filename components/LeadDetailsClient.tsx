@@ -26,6 +26,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { QuoteSummaryCard } from "./QuoteSummaryCard";
+import { LeadNotesManager } from "./LeadNotesManager";
 
 interface LeadDetailsClientProps {
   orgSlug: string;
@@ -227,6 +228,8 @@ export function LeadDetailsClient({
               </div>
             </CardContent>
           </Card>
+          {/* Lead Notes */}
+          <LeadNotesManager slug={orgSlug} leadId={lead._id} />
 
           {/* Notes */}
           {lead.notes && (
