@@ -33,6 +33,18 @@ export default clerkMiddleware(async (auth, req) => {
   const authData = await auth();
   const pathname = req.nextUrl.pathname;
 
+  // If user hits root route and is authenticated, redirect to their org dashboard
+  if (pathname === "/" && authData.userId && authData.orgSlug) {
+    return NextResponse.redirect(
+      new URL(`/${authData.orgSlug}/dashboard`, req.url)
+    );
+  }
+
+  // If user hits root route and is authenticated but has no org, redirect to profile
+  if (pathname === "/" && authData.userId && !authData.orgSlug) {
+    return NextResponse.redirect(new URL(`/profile`, req.url));
+  }
+
   // If user hits /dashboard directly, redirect to their org dashboard
   if (pathname === "/dashboard" && authData.userId && authData.orgSlug) {
     return NextResponse.redirect(
