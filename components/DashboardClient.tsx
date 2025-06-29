@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import UpcomingTasksCard from "@/components/UpcomingTasksCard";
+import Link from "next/link";
 
 interface DashboardClientProps {
   orgSlug: string;
@@ -32,35 +33,35 @@ export default function DashboardClient({
       {/* Quick Actions */}
       <div className="bg-white p-6 rounded-lg shadow border">
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <Link
             href={`/${orgSlug}/leads/new`}
             className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
           >
             <div className="text-2xl mb-2">👤</div>
             <div className="text-sm font-medium">Add Lead</div>
-          </a>
-          <a
+          </Link>
+          <Link
             href={`/${orgSlug}/customers/new`}
             className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
           >
             <div className="text-2xl mb-2">🏠</div>
             <div className="text-sm font-medium">New Customer</div>
-          </a>
-          <a
+          </Link>
+          <Link
             href={`/${orgSlug}/quotes`}
             className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
           >
             <div className="text-2xl mb-2">📋</div>
             <div className="text-sm font-medium">Create Quote</div>
-          </a>
-          <a
+          </Link>
+          {/* <Link
             href={`/${orgSlug}/schedule`}
             className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
           >
             <div className="text-2xl mb-2">📅</div>
             <div className="text-sm font-medium">Schedule</div>
-          </a>
+          </Link> */}
         </div>
       </div>
 

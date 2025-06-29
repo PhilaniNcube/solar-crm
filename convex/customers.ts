@@ -370,7 +370,7 @@ export const getCustomerActivity = query({
       throw new Error("Organization slug is required");
     }
 
-    // fetch the customers that were either created or updated in the last week
+    // fetch the last 5 customers that were either created or updated in the last week
     const oneWeekAgo = new Date(
       Date.now() - 7 * 24 * 60 * 60 * 1000
     ).toISOString();
@@ -383,7 +383,7 @@ export const getCustomerActivity = query({
           q.gte(q.field("updatedAt"), oneWeekAgo)
         )
       )
-      .collect();
+      .take(5);
 
     // Sort by newest first
     recentCustomers.sort((a, b) => {
