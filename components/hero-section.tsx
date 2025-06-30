@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -20,13 +21,15 @@ export function HeroSection() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button
-                size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                Try It Today For Free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/sign-in">
+                <Button
+                  size="lg"
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  Try It Today For Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
